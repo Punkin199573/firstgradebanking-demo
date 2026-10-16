@@ -1,5 +1,5 @@
 "use client";
-import { sidebarLinks } from "@/constants";
+import { getNavigationLinks, isNavigationItemActive } from "@/constants";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
@@ -12,7 +12,7 @@ const Sidebar = ({ user }: SiderbarProps) => {
   const pathname = usePathname();
   return (
     <section className="sidebar">
-      <nav className="flex flex-col gap-4">
+      <nav aria-label="Primary navigation" className="flex flex-col gap-3">
         <Link
           href={`/`}
           className="mb-12 cursor-pointer items-center gap-2 flex"
@@ -31,22 +31,19 @@ const Sidebar = ({ user }: SiderbarProps) => {
             </span>
           </h1>
         </Link>
-        {[...sidebarLinks,
-          ...(user.role === "admin"
-            ? [{ imgURL: "/icons/monitor.svg", route: "/admin", label: "Admin Console" }]
-            : []),
-        ].map((link) => {
-          const isActive = pathname === link.route;
+        {getNavigationLinks(user.role).map((link) => {
+          const isActive = isNavigationItemActive(pathname, link.route);
           return (
             <Link
               href={link.route}
               key={link.label}
+              aria-current={isActive ? "page" : undefined}
               className={cn("sidebar-link", {
                 "bg-bankGradient": isActive,
                 "hover:bg-teal-50": !isActive,
               })}
             >
-              <div className="size-6  relative ">
+              <div className="relative size-6">
                 <Image
                   src={link.imgURL}
                   alt={link.label}

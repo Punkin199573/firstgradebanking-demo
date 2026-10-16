@@ -21,6 +21,24 @@ export const sidebarLinks = [
   },
 ];
 
+export const getNavigationLinks = (role: User["role"]) => [
+  ...sidebarLinks,
+  ...(role === "admin"
+    ? [
+        {
+          imgURL: "/icons/monitor.svg",
+          route: "/admin",
+          label: "Admin Console",
+        },
+      ]
+    : []),
+];
+
+export const isNavigationItemActive = (pathname: string, route: string) =>
+  route === "/"
+    ? pathname === route
+    : pathname === route || pathname.startsWith(`${route}/`);
+
 export const topCategoryStyles = {
   "Food and Drink": {
     bg: "bg-blue-25",

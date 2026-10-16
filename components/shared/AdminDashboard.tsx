@@ -486,6 +486,20 @@ export default function AdminDashboard({ data }: { data: AdminData }) {
                       </div>
                       <StatusBadge status={selectedTransaction.status} />
                     </div>
+                    {selectedTransaction.recipient && (
+                      <div className="mt-4 rounded-xl border border-gray-200 bg-white p-3">
+                        <p className="text-10 font-semibold uppercase tracking-wide text-gray-500">
+                          External destination · fictional details
+                        </p>
+                        <p className="mt-1 text-14 font-semibold text-gray-900">
+                          {selectedTransaction.recipient.name}
+                        </p>
+                        <p className="mt-1 text-12 text-gray-600">
+                          {selectedTransaction.recipient.institution} · Account
+                          ending in {selectedTransaction.recipient.accountLast4}
+                        </p>
+                      </div>
+                    )}
                     {selectedTransaction.customer_notice && (
                       <p className="mt-3 rounded-xl border border-blue-100 bg-blue-25 p-3 text-12 leading-5 text-blue-900">
                         <span className="font-semibold">Current customer notice: </span>
@@ -601,6 +615,13 @@ export default function AdminDashboard({ data }: { data: AdminData }) {
                       </td>
                       <td className="p-3 font-medium text-gray-900">
                         {transaction.name}
+                        {transaction.recipient && (
+                          <p className="mt-1 text-10 font-normal text-gray-500">
+                            To {transaction.recipient.name} ·{" "}
+                            {transaction.recipient.institution} ·••••{" "}
+                            {transaction.recipient.accountLast4}
+                          </p>
+                        )}
                       </td>
                       <td className="p-3 text-gray-600">
                         {data.accounts.find(

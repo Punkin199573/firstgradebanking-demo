@@ -27,6 +27,9 @@ export default async function Layout({
             <span className="truncate text-14 font-semibold text-gray-900 sm:text-16">
               First Grade Finance
             </span>
+            <span className="hidden rounded-full border border-teal-200 bg-teal-50 px-2.5 py-1 text-10 font-semibold uppercase tracking-wide text-teal-800 sm:inline-flex">
+              Prototype · no real funds
+            </span>
           </div>
           <div className="flex shrink-0 items-center gap-2">
             <ThemeToggle />

@@ -17,10 +17,10 @@ const TransferFunds = async () => {
   return (
     <section className="payment-transfer">
       <HeaderBox
-        title="Internal transfer"
-        subtext="Preview an internal transfer between your simulated accounts."
+        title="Transfer funds"
+        subtext="Set up a transfer between your accounts or prepare a fictional request for another institution."
       />
-      <section className="size-full pt-5">
+      <section className="size-full pt-1">
         <PaymentTransferForm accounts={accounts.data} />
       </section>
     </section>

@@ -2,7 +2,17 @@
 
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowDownUp, CheckCircle2, Loader2, X } from "lucide-react";
+import {
+  AlertCircle,
+  ArrowDownUp,
+  CheckCircle2,
+  CircleDollarSign,
+  Clock3,
+  Landmark,
+  Loader2,
+  ShieldCheck,
+  X,
+} from "lucide-react";
 import {
   getSimulatedTransferStatus,
   simulateDemoTransfer,
@@ -12,15 +22,21 @@ import { Button } from "../ui/button";
 
 const PaymentTransferForm = ({ accounts }: PaymentTransferFormProps) => {
   const router = useRouter();
+  const [destination, setDestination] = useState<"internal" | "external">(
+    accounts.length > 1 ? "internal" : "external"
+  );
   const [senderAccountId, setSenderAccountId] = useState(accounts[0]?.id ?? "");
   const [receiverAccountId, setReceiverAccountId] = useState(
     accounts[1]?.id ?? ""
   );
+  const [recipientName, setRecipientName] = useState("");
+  const [recipientInstitution, setRecipientInstitution] = useState("");
+  const [recipientAccountNumber, setRecipientAccountNumber] = useState("");
   const [amount, setAmount] = useState("");
   const [memo, setMemo] = useState("");
   const [transferType, setTransferType] = useState<
     "internal" | "ach" | "same_day_ach" | "wire" | "rtp" | "fednow" | "p2p"
-  >("internal");
+  >(accounts.length > 1 ? "internal" : "ach");
   const [error, setError] = useState("");
   const [receipt, setReceipt] = useState<{
     id: string;
@@ -30,13 +46,21 @@ const PaymentTransferForm = ({ accounts }: PaymentTransferFormProps) => {
     customerNotice: string;
     emailSent: boolean;
     emailReason?: string;
+    recipient?: {
+      name: string;
+      institution: string;
+      accountLast4: string;
+    };
   } | null>(null);
   const [statusError, setStatusError] = useState("");
   const [checkingStatus, setCheckingStatus] = useState(false);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const [isLoading, setIsLoading] = useState(false);
   const receiptId = receipt?.id;
-  const receiptStatus = receipt?.status;
+  const lastObservedStatus = useRef<{
+    status: Transaction["status"];
+    notice: string;
+  } | null>(null);
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -47,18 +71,35 @@ const PaymentTransferForm = ({ accounts }: PaymentTransferFormProps) => {
       setError("Enter an amount greater than zero.");
       return;
     }
+    if (destination === "internal" && accounts.length < 2) {
+      setError("Add another account or choose an external institution.");
+      return;
+    }
 
     setIsLoading(true);
     try {
+      const externalRecipient =
+        destination === "external"
+          ? {
+              name: recipientName,
+              institution: recipientInstitution,
+              accountNumber: recipientAccountNumber,
+            }
+          : undefined;
       const result = await simulateDemoTransfer({
         senderAccountId,
         receiverAccountId,
         amount: parsedAmount,
         memo,
         transferType,
+        recipient: externalRecipient,
       });
       setAmount("");
       setMemo("");
+      setRecipientName("");
+      setRecipientInstitution("");
+      setRecipientAccountNumber("");
+      lastObservedStatus.current = null;
       setReceipt({
         id: result.transferId,
         amount: parsedAmount,
@@ -67,6 +108,7 @@ const PaymentTransferForm = ({ accounts }: PaymentTransferFormProps) => {
         customerNotice: "",
         emailSent: result.email.sent,
         emailReason: result.email.reason,
+        recipient: result.recipient,
       });
       router.refresh();
     } catch (submitError) {
@@ -81,25 +123,34 @@ const PaymentTransferForm = ({ accounts }: PaymentTransferFormProps) => {
   };
 
   useEffect(() => {
-    if (
-      !receiptId ||
-      receiptStatus === "successful" ||
-      receiptStatus === "failed"
-    ) {
-      return;
-    }
+    if (!receiptId) return;
 
     let active = true;
     const refreshStatus = async () => {
       try {
         const result = await getSimulatedTransferStatus(receiptId);
         if (!active) return;
+        const previousStatus = lastObservedStatus.current ?? {
+          status: "pending",
+          notice: "",
+        };
+        if (
+          previousStatus.status !== result.status ||
+          previousStatus.notice !== result.customerNotice
+        ) {
+          router.refresh();
+        }
+        lastObservedStatus.current = {
+          status: result.status,
+          notice: result.customerNotice,
+        };
         setReceipt((current) =>
           current
             ? {
                 ...current,
                 status: result.status,
                 customerNotice: result.customerNotice,
+                recipient: result.recipient,
               }
             : current
         );
@@ -114,12 +165,13 @@ const PaymentTransferForm = ({ accounts }: PaymentTransferFormProps) => {
         }
       }
     };
+    void refreshStatus();
     const interval = window.setInterval(refreshStatus, 15000);
     return () => {
       active = false;
       window.clearInterval(interval);
     };
-  }, [receiptId, receiptStatus]);
+  }, [receiptId, router]);
 
   useEffect(() => {
     if (!receiptId) return;
@@ -131,76 +183,238 @@ const PaymentTransferForm = ({ accounts }: PaymentTransferFormProps) => {
     return () => window.removeEventListener("keydown", closeOnEscape);
   }, [receiptId]);
 
-  if (accounts.length < 2) {
+  if (accounts.length === 0) {
     return (
-      <p className="rounded-lg border border-gray-200 bg-white p-5 text-14 text-gray-700">
-        Add at least two simulated accounts before making an internal transfer.
+      <p className="mx-auto max-w-6xl rounded-2xl border border-gray-200 bg-white p-6 text-14 text-gray-700 shadow-sm">
+        No simulated accounts are available for a transfer yet.
       </p>
     );
   }
 
+  const selectedAccount = accounts.find(
+    (account) => account.id === senderAccountId
+  );
+  const selectedDestination = accounts.find(
+    (account) => account.id === receiverAccountId
+  );
+
   return (
     <>
-      <form
-        onSubmit={submit}
-        className="transfer-form-card flex w-full max-w-3xl flex-col gap-5 rounded-3xl border border-gray-200 bg-white p-4 shadow-chart sm:gap-6 sm:p-7"
-      >
-      <p className="rounded-2xl border border-blue-100 bg-blue-25 p-4 text-14 leading-6 text-blue-900">
-        Prototype environment: transfer methods are visual simulations only.
-        No ACH, wire, real-time payment, or P2P network is connected, and no
-        real funds move.
-      </p>
-
-      <div className="grid gap-4 sm:grid-cols-2">
-        <label className="flex min-w-0 flex-col gap-2 text-14 font-medium text-gray-700">
-          From account
-          <select
-            className="input-class"
-            value={senderAccountId}
-            onChange={(event) => setSenderAccountId(event.target.value)}
-            required
-          >
-            {accounts.map((account) => (
-              <option key={account.id} value={account.id}>
-                {account.name} · {formatAmount(account.currentBalance)}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <label className="flex min-w-0 flex-col gap-2 text-14 font-medium text-gray-700">
-          To account
-          <select
-            className="input-class"
-            value={receiverAccountId}
-            onChange={(event) => setReceiverAccountId(event.target.value)}
-            required
-          >
-            {accounts.map((account) => (
-              <option
-                key={account.id}
-                value={account.id}
-                disabled={account.id === senderAccountId}
-              >
-                {account.name} · {formatAmount(account.currentBalance)}
-              </option>
-            ))}
-          </select>
-        </label>
+      <div className="transfer-workspace mx-auto grid w-full max-w-6xl items-start gap-5 xl:grid-cols-[minmax(0,1fr)_20rem] xl:gap-6">
+        <form
+          onSubmit={submit}
+          className="transfer-form-card flex w-full min-w-0 flex-col gap-6 rounded-3xl border border-gray-200 bg-white p-5 shadow-chart sm:p-7"
+        >
+      <div className="flex flex-wrap items-start justify-between gap-4 border-b border-gray-100 pb-5">
+        <div>
+          <p className="text-11 font-semibold uppercase tracking-[0.14em] text-teal-700">
+            Transfer details
+          </p>
+          <h2 className="mt-1 text-20 font-semibold tracking-tight text-gray-900">
+            Create a transfer
+          </h2>
+          <p className="mt-1 text-13 leading-5 text-gray-600">
+            Choose where the request should go and review the details.
+          </p>
+        </div>
+        <span className="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-11 font-semibold text-amber-700">
+          <ShieldCheck size={14} aria-hidden="true" />
+          Prototype environment
+        </span>
       </div>
+
+      <div className="flex gap-3 rounded-2xl border border-blue-100 bg-blue-25 p-4 text-blue-900">
+        <AlertCircle
+          className="mt-0.5 shrink-0 text-blue-700"
+          size={19}
+          aria-hidden="true"
+        />
+        <p className="text-13 leading-5">
+          <span className="font-semibold">No real funds move.</span> External
+          transfers are fictional requests only. No payment network is connected;
+          use fictional recipient details.
+        </p>
+      </div>
+
+      <fieldset className="space-y-3">
+        <legend className="text-14 font-semibold text-gray-900">
+          Destination
+        </legend>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <label
+            className={`flex cursor-pointer items-start gap-3 rounded-2xl border p-4 transition-colors ${
+              destination === "internal"
+                ? "border-teal-600 bg-teal-50 shadow-sm"
+                : "border-gray-200 bg-white hover:border-teal-300 hover:bg-gray-25"
+            } ${accounts.length < 2 ? "cursor-not-allowed opacity-60" : ""}`}
+          >
+            <input
+              type="radio"
+              name="destination"
+              value="internal"
+              checked={destination === "internal"}
+              disabled={accounts.length < 2}
+              onChange={() => {
+                setDestination("internal");
+                setTransferType("internal");
+              }}
+              className="mt-1 accent-teal-700"
+            />
+            <span>
+              <span className="block text-14 font-semibold text-gray-900">
+                My accounts
+              </span>
+              <span className="mt-1 block text-12 leading-5 text-gray-600">
+                Transfer a simulated balance between accounts you own.
+              </span>
+            </span>
+          </label>
+          <label
+            className={`flex cursor-pointer items-start gap-3 rounded-2xl border p-4 transition-colors ${
+              destination === "external"
+                ? "border-teal-600 bg-teal-50 shadow-sm"
+                : "border-gray-200 bg-white hover:border-teal-300 hover:bg-gray-25"
+            }`}
+          >
+            <input
+              type="radio"
+              name="destination"
+              value="external"
+              checked={destination === "external"}
+              onChange={() => {
+                setDestination("external");
+                if (transferType === "internal") setTransferType("ach");
+              }}
+              className="mt-1 accent-teal-700"
+            />
+            <span>
+              <span className="block text-14 font-semibold text-gray-900">
+                Another institution
+              </span>
+              <span className="mt-1 block text-12 leading-5 text-gray-600">
+                Submit a fictional request for administrator review.
+              </span>
+            </span>
+          </label>
+        </div>
+      </fieldset>
+
+      <label className="flex min-w-0 flex-col gap-2 text-14 font-medium text-gray-700">
+        From account
+        <select
+          className="input-class"
+          value={senderAccountId}
+          onChange={(event) => {
+            const nextSenderAccountId = event.target.value;
+            setSenderAccountId(nextSenderAccountId);
+            if (receiverAccountId === nextSenderAccountId) {
+              setReceiverAccountId(
+                accounts.find((account) => account.id !== nextSenderAccountId)
+                  ?.id ?? ""
+              );
+            }
+          }}
+          required
+        >
+          {accounts.map((account) => (
+            <option key={account.id} value={account.id}>
+              {account.name} · {formatAmount(account.currentBalance)}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      {destination === "internal" ? (
+        accounts.length > 1 ? (
+          <label className="flex min-w-0 flex-col gap-2 text-14 font-medium text-gray-700">
+            To account
+            <select
+              className="input-class"
+              value={receiverAccountId}
+              onChange={(event) => setReceiverAccountId(event.target.value)}
+              required
+            >
+              {accounts.map((account) => (
+                <option
+                  key={account.id}
+                  value={account.id}
+                  disabled={account.id === senderAccountId}
+                >
+                  {account.name} · {formatAmount(account.currentBalance)}
+                </option>
+              ))}
+            </select>
+          </label>
+        ) : (
+          <p className="rounded-xl bg-amber-50 p-3 text-12 text-amber-800">
+            An internal transfer needs two accounts. Choose another institution
+            above, or add a second account.
+          </p>
+        )
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-2">
+          <label className="flex flex-col gap-2 text-14 font-medium text-gray-700">
+            Recipient name
+            <input
+              className="input-class"
+              type="text"
+              autoComplete="off"
+              maxLength={80}
+              minLength={2}
+              value={recipientName}
+              onChange={(event) => setRecipientName(event.target.value)}
+              required
+            />
+          </label>
+          <label className="flex flex-col gap-2 text-14 font-medium text-gray-700">
+            Institution name
+            <input
+              className="input-class"
+              type="text"
+              autoComplete="off"
+              maxLength={80}
+              minLength={2}
+              value={recipientInstitution}
+              onChange={(event) => setRecipientInstitution(event.target.value)}
+              required
+            />
+          </label>
+          <label className="flex flex-col gap-2 text-14 font-medium text-gray-700 sm:col-span-2">
+            Fictional recipient account number
+            <input
+              className="input-class"
+              type="text"
+              inputMode="numeric"
+              autoComplete="off"
+              pattern="[0-9]{4,17}"
+              maxLength={17}
+              minLength={4}
+              value={recipientAccountNumber}
+              onChange={(event) =>
+                setRecipientAccountNumber(
+                  event.target.value.replace(/\D/g, "").slice(0, 17)
+                )
+              }
+              required
+            />
+            <span className="text-12 font-normal text-gray-500">
+              Use 4–17 digits from fictional test data. Only the last four are
+              retained; the full number is discarded after submission.
+            </span>
+          </label>
+        </div>
+      )}
 
       <label className="flex flex-col gap-2 text-14 font-medium text-gray-700">
         Transfer method
         <select
           className="input-class"
           value={transferType}
-          onChange={(event) =>
-            setTransferType(
-              event.target.value as typeof transferType
-            )
-          }
+          onChange={(event) => setTransferType(event.target.value as typeof transferType)}
         >
-          <option value="internal">Internal account transfer</option>
+          {destination === "internal" && (
+            <option value="internal">Internal account transfer</option>
+          )}
           <option value="ach">ACH (simulated)</option>
           <option value="same_day_ach">Same-day ACH (simulated)</option>
           <option value="wire">Domestic wire (simulated)</option>
@@ -248,7 +462,7 @@ const PaymentTransferForm = ({ accounts }: PaymentTransferFormProps) => {
 
       <Button
         type="submit"
-        className="payment-transfer_btn"
+        className="payment-transfer_btn min-h-12 rounded-xl !text-15"
         disabled={isLoading}
       >
         {isLoading ? (
@@ -257,11 +471,98 @@ const PaymentTransferForm = ({ accounts }: PaymentTransferFormProps) => {
           </>
         ) : (
           <>
-            <ArrowDownUp size={18} /> &nbsp; Submit simulated transfer
+            <ArrowDownUp size={18} /> &nbsp;
+            {destination === "external"
+              ? "Submit simulated transfer request"
+              : "Submit simulated transfer"}
           </>
         )}
       </Button>
-      </form>
+        </form>
+
+        <aside className="transfer-summary space-y-4 xl:sticky xl:top-5">
+          <section className="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-chart">
+            <div className="bg-[linear-gradient(135deg,#10283a_0%,#155a5c_100%)] p-5 text-white">
+              <div className="flex items-center justify-between gap-3">
+                <span className="inline-flex size-10 items-center justify-center rounded-xl border border-white/15 bg-white/10 text-teal-100">
+                  <Landmark size={20} aria-hidden="true" />
+                </span>
+                <span className="rounded-full border border-amber-200/30 bg-amber-100/10 px-2.5 py-1 text-10 font-semibold uppercase tracking-wide text-amber-100">
+                  Preview only
+                </span>
+              </div>
+              <p className="mt-5 text-12 font-medium text-teal-100">
+                Transfer overview
+              </p>
+              <p className="mt-1 break-all text-30 font-semibold tracking-tight">
+                {formatAmount(Number(amount) || 0)}
+              </p>
+              <p className="mt-1 text-12 text-white/70">
+                Requested amount · USD
+              </p>
+            </div>
+            <div className="space-y-4 p-5">
+              <div>
+                <p className="text-10 font-semibold uppercase tracking-[0.12em] text-gray-500">
+                  From
+                </p>
+                <p className="mt-1 text-14 font-semibold text-gray-900">
+                  {selectedAccount?.name ?? "Select an account"}
+                </p>
+                {selectedAccount && (
+                  <p className="mt-0.5 text-12 text-gray-600">
+                    Available · {formatAmount(selectedAccount.availableBalance)}
+                  </p>
+                )}
+              </div>
+              <div className="border-t border-gray-100 pt-4">
+                <p className="text-10 font-semibold uppercase tracking-[0.12em] text-gray-500">
+                  To
+                </p>
+                <p className="mt-1 text-14 font-semibold text-gray-900">
+                  {destination === "internal"
+                    ? selectedDestination?.name ?? "Select an account"
+                    : recipientName.trim() || "Recipient"}
+                </p>
+                <p className="mt-0.5 text-12 text-gray-600">
+                  {destination === "internal"
+                    ? "Your account · simulated"
+                    : recipientInstitution.trim() || "Another institution"}
+                </p>
+              </div>
+              <div className="border-t border-gray-100 pt-4">
+                <p className="text-10 font-semibold uppercase tracking-[0.12em] text-gray-500">
+                  Method
+                </p>
+                <p className="mt-1 text-14 font-semibold capitalize text-gray-900">
+                  {transferType.replaceAll("_", " ").toUpperCase()}
+                </p>
+                <p className="mt-0.5 text-12 text-gray-600">
+                  Simulated transfer method
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <section className="rounded-2xl border border-gray-200 bg-white p-5">
+            <div className="flex items-start gap-3">
+              <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-xl bg-teal-50 text-teal-700">
+                <CircleDollarSign size={18} aria-hidden="true" />
+              </span>
+              <div>
+                <h3 className="text-13 font-semibold text-gray-900">
+                  What happens next?
+                </h3>
+                <p className="mt-1 text-12 leading-5 text-gray-600">
+                  Your request is recorded as pending. An administrator can
+                  update its status; a successful update changes only your
+                  simulated account balance.
+                </p>
+              </div>
+            </div>
+          </section>
+        </aside>
+      </div>
 
       {receipt && (
         <div className="transfer-dialog-backdrop">
@@ -310,6 +611,10 @@ const PaymentTransferForm = ({ accounts }: PaymentTransferFormProps) => {
                 <CheckCircle2 size={24} />
               ) : receipt.status === "failed" ? (
                 <X size={24} />
+              ) : receipt.status === "on_hold" ? (
+                <Clock3 size={24} />
+              ) : receipt.status === "action_required" ? (
+                <AlertCircle size={24} />
               ) : (
                 <Loader2 size={24} className="animate-spin" />
               )}
@@ -333,11 +638,33 @@ const PaymentTransferForm = ({ accounts }: PaymentTransferFormProps) => {
             </h2>
             <p className="mt-3 text-14 leading-6 text-gray-600">
               {receipt.status === "successful"
-                ? "The administrator marked this simulated transfer successful. The simulated account balances have been updated."
+                ? "The administrator marked this simulated request successful. Your simulated account balance has been updated."
                 : receipt.status === "failed"
-                  ? "The administrator marked this simulated transfer failed. Simulated account balances were not changed."
-                  : "This simulated transfer is awaiting an administrator status update. Account balances will not change unless it is marked successful."}
+                  ? "The administrator marked this simulated request failed. Simulated account balances were not changed."
+                  : receipt.status === "on_hold"
+                    ? "The administrator placed this simulated request on hold. Your simulated balance has not changed."
+                    : receipt.status === "action_required"
+                      ? "The administrator needs more information before updating this simulated request. Your simulated balance has not changed."
+                      : "This simulated request is awaiting an administrator status update. Account balances will not change unless it is marked successful."}
             </p>
+            <p className="mt-2 text-12 text-gray-500">
+              Status and administrator messages refresh automatically while
+              this screen is open.
+            </p>
+            {receipt.recipient && (
+              <div className="mt-4 rounded-xl border border-gray-200 bg-gray-25 p-4">
+                <p className="text-10 font-semibold uppercase tracking-wide text-gray-500">
+                  External destination · fictional details
+                </p>
+                <p className="mt-1 text-14 font-semibold text-gray-900">
+                  {receipt.recipient.name}
+                </p>
+                <p className="mt-1 text-12 text-gray-600">
+                  {receipt.recipient.institution} · Account ending in{" "}
+                  {receipt.recipient.accountLast4}
+                </p>
+              </div>
+            )}
             {receipt.customerNotice && (
               <div className="mt-4 rounded-xl border border-blue-100 bg-blue-25 p-4">
                 <p className="text-10 font-semibold uppercase tracking-wide text-blue-700">
@@ -379,7 +706,7 @@ const PaymentTransferForm = ({ accounts }: PaymentTransferFormProps) => {
               role="status"
             >
               {receipt.emailSent
-                ? "A pending-status email was sent to your account email."
+                ? "A transfer request email was sent to your account email."
                 : `Transfer saved, but email was not sent: ${receipt.emailReason}`}
             </p>
             {statusError && (
@@ -388,43 +715,53 @@ const PaymentTransferForm = ({ accounts }: PaymentTransferFormProps) => {
               </p>
             )}
             <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-              {receipt.status !== "successful" &&
-                receipt.status !== "failed" && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="w-full"
-                    disabled={checkingStatus}
-                    onClick={async () => {
-                      setCheckingStatus(true);
-                      setStatusError("");
-                      try {
-                        const result = await getSimulatedTransferStatus(
-                          receipt.id
-                        );
-                        setReceipt((current) =>
-                          current
-                            ? {
-                                ...current,
-                                status: result.status,
-                                customerNotice: result.customerNotice,
-                              }
-                            : current
-                        );
-                      } catch (statusCheckError) {
-                        setStatusError(
-                          statusCheckError instanceof Error
-                            ? statusCheckError.message
-                            : "Could not refresh transfer status."
-                        );
-                      } finally {
-                        setCheckingStatus(false);
-                      }
-                    }}
-                  >
-                    {checkingStatus ? "Checking..." : "Refresh status"}
-                  </Button>
-                )}
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                disabled={checkingStatus}
+                onClick={async () => {
+                  setCheckingStatus(true);
+                  setStatusError("");
+                  try {
+                    const result = await getSimulatedTransferStatus(receipt.id);
+                    const previousStatus = lastObservedStatus.current ?? {
+                      status: "pending",
+                      notice: "",
+                    };
+                    if (
+                      previousStatus.status !== result.status ||
+                      previousStatus.notice !== result.customerNotice
+                    ) {
+                      router.refresh();
+                    }
+                    lastObservedStatus.current = {
+                      status: result.status,
+                      notice: result.customerNotice,
+                    };
+                    setReceipt((current) =>
+                      current
+                        ? {
+                            ...current,
+                            status: result.status,
+                            customerNotice: result.customerNotice,
+                            recipient: result.recipient,
+                          }
+                        : current
+                    );
+                  } catch (statusCheckError) {
+                    setStatusError(
+                      statusCheckError instanceof Error
+                        ? statusCheckError.message
+                        : "Could not refresh transfer status."
+                    );
+                  } finally {
+                    setCheckingStatus(false);
+                  }
+                }}
+              >
+                {checkingStatus ? "Checking..." : "Refresh status"}
+              </Button>
               <Button
                 type="button"
                 className="w-full"

@@ -65,9 +65,15 @@ balances and create paired ledger entries atomically in the database.
    It enables audited status corrections with safe balance reconciliation and
    gives each new signup independently generated account numbers, masks, and
    starting balances. Existing accounts are not replaced.
-7. In Supabase **Project Settings → API**, copy the Project URL and the
+7. Run
+   [`supabase/migrations/20261016050000_external_institution_transfers.sql`](./supabase/migrations/20261016050000_external_institution_transfers.sql).
+   It adds external-institution transfer requests. Requests remain pending
+   until an administrator updates the status; only a successful status changes
+   the sender's simulated balance. The complete recipient account number is
+   discarded, and only its last four digits are retained for the prototype.
+8. In Supabase **Project Settings → API**, copy the Project URL and the
    publishable key.
-8. Copy `.env.example` to `.env.local`, then set:
+9. Copy `.env.example` to `.env.local`, then set:
 
    ```env
    NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
@@ -84,13 +90,13 @@ balances and create paired ledger entries atomically in the database.
    a user-scoped read. Other application actions use the user-scoped key and
    database row-level security.
 
-9. Configure email confirmations in Supabase **Authentication → Providers →
+10. Configure email confirmations in Supabase **Authentication → Providers →
    Email**. If confirmation is enabled, account-detail email lookup uses the
    server-only service-role key; never expose this key to a browser or commit
    it. Transaction and status emails are sent through Resend only after the
    database operation succeeds. Delivery failures are reported in the UI and
    do not undo a saved simulated transaction.
-10. For immediate local prototype sign-up, turn off email confirmations in
+11. For immediate local prototype sign-up, turn off email confirmations in
    **Authentication → Providers → Email**. If confirmation remains enabled,
    new users must confirm their email before signing in.
 
@@ -108,7 +114,10 @@ explore the prototype. Sign-up asks only for a name, email, and password. On
 successful account creation, the database trigger creates three simulated
 accounts and sample transactions. Use **Internal transfer** to preview a
 simulated transfer; the resulting balances and transaction history persist in
-Supabase.
+Supabase. Choose **Another institution** to submit a fictional external
+transfer request. It remains pending until an administrator updates its
+status; a successful update changes the simulated balance, and status changes
+and customer notices appear in the status view and transaction history.
 
 ## Enable the admin console
 
@@ -153,7 +162,7 @@ npm run lint      # ESLint
 
 Deploy to Vercel or another Next.js host. Set
 `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` in the
-hosting environment and apply all five SQL migrations to the Supabase
+hosting environment and apply all six SQL migrations to the Supabase
 project. This deployment remains a non-financial prototype; it is not a
 production banking service and must not be presented as one. Configure the
 Supabase Auth site URL and redirect URLs for the deployed

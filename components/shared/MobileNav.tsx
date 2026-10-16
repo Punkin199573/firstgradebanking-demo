@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/sheet";
 import Image from "next/image";
 import Link from "next/link";
-import { sidebarLinks } from "@/constants";
+import { getNavigationLinks, isNavigationItemActive } from "@/constants";
 import { cn } from "@/lib/utils";
 import { usePathname } from "next/navigation";
 import Footer from "./Footer";
@@ -34,7 +34,7 @@ const MobileNav = ({ user }: MobileNavProps) => {
             />
           </span>
         </SheetTrigger>
-        <SheetContent className="mobile-nav-sheet border-none bg-white" side={"left"}>
+        <SheetContent className="mobile-nav-sheet border-none bg-white" side="left">
           <SheetHeader className="sr-only">
             <SheetTitle>First Grade Finance navigation</SheetTitle>
             <SheetDescription>Navigate to an account area.</SheetDescription>
@@ -53,18 +53,17 @@ const MobileNav = ({ user }: MobileNavProps) => {
           </Link>
           <div className="mobilenav-sheet">
             <SheetClose asChild>
-            <nav className="flex h-full flex-col gap-2 pt-8 text-white">
-                {[...sidebarLinks,
-                  ...(user.role === "admin"
-                    ? [{ imgURL: "/icons/monitor.svg", route: "/admin", label: "Admin Console" }]
-                    : []),
-                ].map((link) => {
-                  const isActive =
-                    pathname === link.route || pathname.startsWith(link.route);
+              <nav
+                aria-label="Primary navigation"
+                className="flex h-full flex-col gap-2 pt-8 text-white"
+              >
+                {getNavigationLinks(user.role).map((link) => {
+                  const isActive = isNavigationItemActive(pathname, link.route);
                   return (
                     <Link
                       href={link.route}
                       key={link.label}
+                      aria-current={isActive ? "page" : undefined}
                       className={cn("mobilenav-sheet_close", {
                         "bg-bankGradient": isActive,
                         "hover:bg-teal-50": !isActive,

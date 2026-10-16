@@ -76,8 +76,13 @@ export async function getAdminDashboardData() {
   await requireAdmin();
   const supabase = createSupabaseServerClient();
 
-  const [profilesResult, accountsResult, transactionsResult, auditResult] =
-    await Promise.all([
+  const [
+    profilesResult,
+    accountsResult,
+    transactionsResult,
+    auditResult,
+    transfersResult,
+  ] = await Promise.all([
       supabase
         .from("profiles")
         .select("id, email, first_name, last_name, role, created_at")
@@ -92,7 +97,7 @@ export async function getAdminDashboardData() {
       supabase
         .from("transactions")
         .select(
-          "id, user_id, account_id, name, amount, direction, category, payment_channel, date, status, customer_notice, status_updated_at"
+          "id, user_id, account_id, transfer_id, name, amount, direction, category, payment_channel, date, status, customer_notice, status_updated_at"
         )
         .order("date", { ascending: false })
         .limit(1000),
@@ -103,6 +108,14 @@ export async function getAdminDashboardData() {
         )
         .order("created_at", { ascending: false })
         .limit(100),
+      supabase
+        .from("demo_transfers")
+        .select(
+          "id, recipient_name, recipient_institution, recipient_account_last4"
+        )
+        .not("recipient_name", "is", null)
+        .order("created_at", { ascending: false })
+        .limit(1000),
     ]);
 
   const failures = [
@@ -111,16 +124,34 @@ export async function getAdminDashboardData() {
     transactionsResult.error &&
       `transactions: ${transactionsResult.error.message}`,
     auditResult.error && `audit log: ${auditResult.error.message}`,
+    transfersResult.error &&
+      `external transfer details: ${transfersResult.error.message}`,
   ].filter(Boolean);
 
   if (failures.length) {
     throw new Error(`Could not load admin dashboard (${failures.join("; ")}).`);
   }
 
+  const transferDetails = new Map(
+    (transfersResult.data ?? []).map((transfer) => [
+      transfer.id,
+      {
+        name: transfer.recipient_name,
+        institution: transfer.recipient_institution,
+        accountLast4: transfer.recipient_account_last4,
+      },
+    ])
+  );
+
   return {
     users: profilesResult.data ?? [],
     accounts: accountsResult.data ?? [],
-    transactions: transactionsResult.data ?? [],
+    transactions: (transactionsResult.data ?? []).map((transaction) => ({
+      ...transaction,
+      recipient: transaction.transfer_id
+        ? (transferDetails.get(transaction.transfer_id) ?? null)
+        : null,
+    })),
     auditLog: auditResult.data ?? [],
   };
 }
@@ -227,14 +258,32 @@ export async function updateSimulatedTransaction(input: {
   }
 
   const supabase = createSupabaseServerClient();
-  const { data, error } = await supabase.rpc(
-    "admin_update_simulated_transaction",
-    {
-      p_transaction_id: input.transactionId,
-      p_status: input.status,
-      p_customer_notice: input.customerNotice.trim(),
-    }
-  );
+  const { data: transaction, error: transactionError } = await supabase
+    .from("transactions")
+    .select("payment_channel")
+    .eq("id", input.transactionId)
+    .single();
+  if (transactionError || !transaction) {
+    throw new Error(
+      `Could not load the selected transaction${
+        transactionError ? `: ${transactionError.message}` : "."
+      }`
+    );
+  }
+
+  const isExternalTransfer =
+    transaction.payment_channel.startsWith("simulated_external_");
+  const { data, error } = isExternalTransfer
+    ? await supabase.rpc("admin_update_external_simulated_transaction", {
+        p_transaction_id: input.transactionId,
+        p_status: input.status,
+        p_customer_notice: input.customerNotice.trim(),
+      })
+    : await supabase.rpc("admin_update_simulated_transaction", {
+        p_transaction_id: input.transactionId,
+        p_status: input.status,
+        p_customer_notice: input.customerNotice.trim(),
+      });
 
   if (error) throw new Error(`Transaction update failed: ${error.message}`);
   if (!data) throw new Error("The transaction update did not return a receipt.");

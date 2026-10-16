@@ -17,6 +17,11 @@ type DemoTransferInput = {
     | "rtp"
     | "fednow"
     | "p2p";
+  recipient?: {
+    name: string;
+    institution: string;
+    accountNumber: string;
+  };
 };
 
 export async function simulateDemoTransfer({
@@ -25,6 +30,7 @@ export async function simulateDemoTransfer({
   amount,
   memo = "",
   transferType,
+  recipient,
 }: DemoTransferInput) {
   if (!Number.isFinite(amount) || amount < 0.01 || amount > 10000) {
     throw new Error("Transfer amount must be between $0.01 and $10,000.");
@@ -32,7 +38,7 @@ export async function simulateDemoTransfer({
   if (Math.round(amount * 100) !== amount * 100) {
     throw new Error("Transfer amount can have at most two decimal places.");
   }
-  if (senderAccountId === receiverAccountId) {
+  if (!recipient && senderAccountId === receiverAccountId) {
     throw new Error("Choose two different accounts.");
   }
   if (
@@ -54,34 +60,71 @@ export async function simulateDemoTransfer({
   if (authError) throw new Error(`Could not verify your session: ${authError.message}`);
   if (!authData.user?.email) throw new Error("A verified account email is required.");
 
-  const { data, error } = await supabase.rpc("simulate_demo_transfer", {
-    p_sender_account_id: senderAccountId,
-    p_receiver_account_id: receiverAccountId,
-    p_amount: amount,
-    p_memo: memo,
-    p_transfer_type: transferType,
-  });
+  if (recipient) {
+    if (transferType === "internal") {
+      throw new Error("Choose an external transfer method.");
+    }
+    if (
+      recipient.name.trim().length < 2 ||
+      recipient.name.trim().length > 80 ||
+      recipient.institution.trim().length < 2 ||
+      recipient.institution.trim().length > 80
+    ) {
+      throw new Error("Enter a recipient name and institution (2–80 characters).");
+    }
+    if (!/^\d{4,17}$/.test(recipient.accountNumber)) {
+      throw new Error("Use a fictional account number with 4 to 17 digits.");
+    }
+  }
+
+  const { data, error } = recipient
+    ? await supabase.rpc("simulate_external_transfer", {
+        p_sender_account_id: senderAccountId,
+        p_amount: amount,
+        p_memo: memo,
+        p_transfer_type: transferType,
+        p_recipient_name: recipient.name.trim(),
+        p_recipient_institution: recipient.institution.trim(),
+        p_recipient_account_number: recipient.accountNumber,
+      })
+    : await supabase.rpc("simulate_demo_transfer", {
+        p_sender_account_id: senderAccountId,
+        p_receiver_account_id: receiverAccountId,
+        p_amount: amount,
+        p_memo: memo,
+        p_transfer_type: transferType,
+      });
 
   if (error) throw new Error(`Simulated transfer failed: ${error.message}`);
   if (!data) throw new Error("The simulated transfer did not return a receipt.");
 
   const email = await sendTransactionalEmail({
     to: authData.user.email,
-    subject: "Your First Grade Finance transfer is pending",
+    subject: "Your First Grade Finance transfer request is pending",
     text: formatTransactionEmail({
-      name: memo.trim() || "Simulated transfer",
+      name: memo.trim() || "Transfer request",
       amount,
       direction: "debit",
       status: "pending",
       notice:
-        "Your simulated transfer request is awaiting review. This does not represent a real payment.",
+        "Your simulated transfer request is awaiting an administrator status update. No real payment was initiated.",
       reference: data,
       transferType: transferType.toUpperCase(),
     }),
   });
 
   revalidatePath("/", "layout");
-  return { transferId: data, email };
+  return {
+    transferId: data,
+    email,
+    recipient: recipient
+      ? {
+          name: recipient.name.trim(),
+          institution: recipient.institution.trim(),
+          accountLast4: recipient.accountNumber.slice(-4),
+        }
+      : undefined,
+  };
 }
 
 export async function getSimulatedTransferStatus(transferId: string) {
@@ -95,7 +138,7 @@ export async function getSimulatedTransferStatus(transferId: string) {
 
   const { data, error } = await supabase
     .from("transactions")
-    .select("status, customer_notice, payment_channel")
+    .select("status, customer_notice, payment_channel, transfer_id")
     .eq("transfer_id", transferId)
     .eq("user_id", authData.user.id);
 
@@ -105,9 +148,41 @@ export async function getSimulatedTransferStatus(transferId: string) {
     throw new Error("Transfer records have inconsistent statuses.");
   }
 
+  let recipient:
+    | { name: string; institution: string; accountLast4: string }
+    | undefined;
+  if (data[0].transfer_id) {
+    const { data: transfer, error: transferError } = await supabase
+      .from("demo_transfers")
+      .select(
+        "recipient_name, recipient_institution, recipient_account_last4"
+      )
+      .eq("id", data[0].transfer_id)
+      .eq("user_id", authData.user.id)
+      .maybeSingle();
+
+    if (transferError) {
+      throw new Error(
+        `Could not load transfer recipient details: ${transferError.message}`
+      );
+    }
+    if (
+      transfer?.recipient_name &&
+      transfer.recipient_institution &&
+      transfer.recipient_account_last4
+    ) {
+      recipient = {
+        name: transfer.recipient_name,
+        institution: transfer.recipient_institution,
+        accountLast4: transfer.recipient_account_last4,
+      };
+    }
+  }
+
   return {
     status: data[0].status,
     customerNotice: data[0].customer_notice,
     transferType: data[0].payment_channel,
+    recipient,
   };
 }
