@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, type FormEvent } from "react";
+import { useMemo, useRef, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import {
   adjustDemoAccountBalance,
@@ -49,6 +49,7 @@ export default function AdminDashboard({ data }: { data: AdminData }) {
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const statusEditorRef = useRef<HTMLDivElement>(null);
 
   const filteredUsers = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
@@ -447,14 +448,15 @@ export default function AdminDashboard({ data }: { data: AdminData }) {
           )}
 
           <section className="rounded-2xl border border-gray-200 bg-white p-5 shadow-chart sm:p-6">
+            <div ref={statusEditorRef} />
             <div>
               <h2 className="text-18 font-semibold text-gray-900">
                 Transaction status &amp; customer notice
               </h2>
               <p className="mt-1 max-w-3xl text-12 leading-5 text-gray-600">
-                Move an open simulated transaction through review, hold,
-                support-required, or final states. Final states cannot be
-                changed. Notices are shown in-app and emailed when configured.
+                Select any recorded simulated transaction to update its status
+                or customer notice. Status corrections are audited and reconcile
+                simulated balances where applicable.
               </p>
             </div>
             {transactions.length > 0 ? (
@@ -462,6 +464,36 @@ export default function AdminDashboard({ data }: { data: AdminData }) {
                 onSubmit={(event) => submit(event, "status")}
                 className="mt-5 grid gap-4 lg:grid-cols-2"
               >
+                {selectedTransaction && (
+                  <div className="rounded-2xl border border-gray-200 bg-gray-25 p-4 lg:col-span-2">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="text-12 font-medium text-gray-500">
+                          Selected transaction
+                        </p>
+                        <p className="mt-1 break-words text-16 font-semibold text-gray-900">
+                          {selectedTransaction.name}
+                        </p>
+                        <p className="mt-1 text-12 text-gray-600">
+                          {selectedTransaction.direction === "debit"
+                            ? "Debit"
+                            : "Credit"}{" "}
+                          · {formatAmount(Number(selectedTransaction.amount))}
+                          {selectedTransaction.payment_channel.startsWith(
+                            "simulated_"
+                          ) && " · Simulated transfer"}
+                        </p>
+                      </div>
+                      <StatusBadge status={selectedTransaction.status} />
+                    </div>
+                    {selectedTransaction.customer_notice && (
+                      <p className="mt-3 rounded-xl border border-blue-100 bg-blue-25 p-3 text-12 leading-5 text-blue-900">
+                        <span className="font-semibold">Current customer notice: </span>
+                        {selectedTransaction.customer_notice}
+                      </p>
+                    )}
+                  </div>
+                )}
                 <label className="flex flex-col gap-2 text-12 font-semibold text-gray-600">
                   Transaction
                   <select
@@ -490,12 +522,7 @@ export default function AdminDashboard({ data }: { data: AdminData }) {
                   <select
                     className="input-class bg-white"
                     value={transactionStatus}
-                    disabled={
-                      !selectedTransaction ||
-                      ["successful", "failed"].includes(
-                        selectedTransaction.status
-                      )
-                    }
+                    disabled={!selectedTransaction}
                     onChange={(event) =>
                       setTransactionStatus(
                         event.target.value as Transaction["status"]
@@ -517,35 +544,22 @@ export default function AdminDashboard({ data }: { data: AdminData }) {
                     placeholder="A clear update for the customer, such as how to contact support."
                     value={customerNotice}
                     onChange={(event) => setCustomerNotice(event.target.value)}
-                    disabled={
-                      !selectedTransaction ||
-                      ["successful", "failed"].includes(
-                        selectedTransaction.status
-                      )
-                    }
+                    disabled={!selectedTransaction}
                   />
                 </label>
-                {selectedTransaction &&
-                  ["successful", "failed"].includes(
-                    selectedTransaction.status
-                  ) && (
-                    <p className="text-12 text-gray-500 lg:col-span-2">
-                      This transaction has a final status and cannot be edited.
-                    </p>
-                  )}
+                <p className="text-12 leading-5 text-gray-500 lg:col-span-2">
+                  Changing a successful status reverses or reapplies its
+                  simulated balance effect. A reversal is blocked if the
+                  account no longer has sufficient simulated funds. Every
+                  change is recorded in the audit trail.
+                </p>
                 <div className="lg:col-span-2">
                   <Button
                     className="w-full sm:w-auto"
                     type="submit"
-                    disabled={
-                      busy ||
-                      !selectedTransaction ||
-                      ["successful", "failed"].includes(
-                        selectedTransaction.status
-                      )
-                    }
+                    disabled={busy || !selectedTransaction}
                   >
-                    Save status and notice
+                    {busy ? "Saving update..." : "Save status and customer notice"}
                   </Button>
                 </div>
               </form>
@@ -563,7 +577,7 @@ export default function AdminDashboard({ data }: { data: AdminData }) {
               </h2>
               <p className="mt-1 text-12 text-gray-600">
                 Ledger entries for {selectedUser?.email ?? "the selected user"}.
-                Entries are append-only; correct mistakes with an adjustment.
+                Choose a row to load it into the status editor above.
               </p>
             </div>
             <div className="max-h-[440px] overflow-auto">
@@ -576,6 +590,7 @@ export default function AdminDashboard({ data }: { data: AdminData }) {
                     <th className="p-3">Direction</th>
                     <th className="p-3">Status</th>
                     <th className="p-3 text-right">Amount</th>
+                    <th className="p-3 text-right">Action</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -595,10 +610,10 @@ export default function AdminDashboard({ data }: { data: AdminData }) {
                       <td className="p-3 capitalize text-gray-600">
                         {transaction.direction}
                       </td>
-                      <td className="p-3 capitalize text-gray-600">
-                        {transaction.status.replaceAll("_", " ")}
+                      <td className="p-3">
+                        <StatusBadge status={transaction.status} />
                         {transaction.customer_notice && (
-                          <p className="mt-1 max-w-56 normal-case text-10 text-gray-500">
+                          <p className="mt-2 max-w-56 normal-case text-10 leading-4 text-gray-500">
                             {transaction.customer_notice}
                           </p>
                         )}
@@ -607,11 +622,28 @@ export default function AdminDashboard({ data }: { data: AdminData }) {
                         {transaction.direction === "debit" ? "−" : "+"}
                         {formatAmount(Number(transaction.amount))}
                       </td>
+                      <td className="p-3 text-right">
+                        <button
+                          type="button"
+                          className="inline-flex min-h-9 items-center justify-center rounded-lg border border-gray-200 px-3 text-12 font-semibold text-gray-700 transition hover:border-teal-600 hover:text-teal-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
+                          onClick={() => {
+                            setSelectedTransactionId(transaction.id);
+                            setTransactionStatus(transaction.status);
+                            setCustomerNotice(transaction.customer_notice);
+                            statusEditorRef.current?.scrollIntoView({
+                              behavior: "smooth",
+                              block: "center",
+                            });
+                          }}
+                        >
+                          Edit status
+                        </button>
+                      </td>
                     </tr>
                   ))}
                   {transactions.length === 0 && (
                     <tr>
-                      <td colSpan={6} className="p-8 text-center text-gray-500">
+                      <td colSpan={7} className="p-8 text-center text-gray-500">
                         No transactions for this user.
                       </td>
                     </tr>
@@ -681,5 +713,23 @@ function Detail({ label, value }: { label: string; value: string }) {
         {value}
       </p>
     </div>
+  );
+}
+
+function StatusBadge({ status }: { status: Transaction["status"] }) {
+  const styles: Record<Transaction["status"], string> = {
+    pending: "border-amber-200 bg-amber-50 text-amber-800",
+    successful: "border-success-100 bg-success-50 text-success-700",
+    on_hold: "border-orange-200 bg-orange-50 text-orange-800",
+    action_required: "border-blue-100 bg-blue-25 text-blue-800",
+    failed: "border-red-100 bg-red-50 text-red-700",
+  };
+
+  return (
+    <span
+      className={`inline-flex whitespace-nowrap rounded-full border px-2.5 py-1 text-10 font-semibold capitalize ${styles[status]}`}
+    >
+      {status.replaceAll("_", " ")}
+    </span>
   );
 }

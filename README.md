@@ -54,15 +54,20 @@ balances and create paired ledger entries atomically in the database.
    states, along with customer-visible in-app notices. Successful transitions
    update simulated balances; other states do not.
    If the original schema and admin migrations have already been applied,
-   apply both lifecycle and simulated-transfer migrations.
+   apply the lifecycle and all following migrations.
 5. Run
    [`supabase/migrations/20261016030000_simulated_transfer_rails.sql`](./supabase/migrations/20261016030000_simulated_transfer_rails.sql).
    It queues internal and external-style simulated transfers as pending and
    applies matching balance changes atomically only after an administrator
    marks the transfer successful.
-6. In Supabase **Project Settings → API**, copy the Project URL and the
+6. Run
+   [`supabase/migrations/20261016040000_status_corrections_and_fresh_signup_data.sql`](./supabase/migrations/20261016040000_status_corrections_and_fresh_signup_data.sql).
+   It enables audited status corrections with safe balance reconciliation and
+   gives each new signup independently generated account numbers, masks, and
+   starting balances. Existing accounts are not replaced.
+7. In Supabase **Project Settings → API**, copy the Project URL and the
    publishable key.
-7. Copy `.env.example` to `.env.local`, then set:
+8. Copy `.env.example` to `.env.local`, then set:
 
    ```env
    NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
@@ -79,13 +84,13 @@ balances and create paired ledger entries atomically in the database.
    a user-scoped read. Other application actions use the user-scoped key and
    database row-level security.
 
-8. Configure email confirmations in Supabase **Authentication → Providers →
+9. Configure email confirmations in Supabase **Authentication → Providers →
    Email**. If confirmation is enabled, account-detail email lookup uses the
    server-only service-role key; never expose this key to a browser or commit
    it. Transaction and status emails are sent through Resend only after the
    database operation succeeds. Delivery failures are reported in the UI and
    do not undo a saved simulated transaction.
-9. For immediate local prototype sign-up, turn off email confirmations in
+10. For immediate local prototype sign-up, turn off email confirmations in
    **Authentication → Providers → Email**. If confirmation remains enabled,
    new users must confirm their email before signing in.
 
@@ -148,7 +153,7 @@ npm run lint      # ESLint
 
 Deploy to Vercel or another Next.js host. Set
 `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` in the
-hosting environment and apply all four SQL migrations to the Supabase
+hosting environment and apply all five SQL migrations to the Supabase
 project. This deployment remains a non-financial prototype; it is not a
 production banking service and must not be presented as one. Configure the
 Supabase Auth site URL and redirect URLs for the deployed
