@@ -16,7 +16,7 @@ create table public.bank_accounts (
   mask text not null,
   type text not null default 'depository',
   subtype text not null default 'checking',
-  institution_id text not null default 'delan-demo-bank',
+  institution_id text not null default 'first-grade-finance-prototype',
   created_at timestamptz not null default now()
 );
 
@@ -106,21 +106,21 @@ begin
   insert into public.bank_accounts (
     user_id, name, official_name, current_balance, available_balance, mask, subtype
   ) values (
-    new.id, 'Everyday Checking', 'Delan Everyday Checking',
+    new.id, 'Everyday Checking', 'First Grade Everyday Checking',
     4280.50, 4280.50, '4821', 'checking'
   ) returning id into checking_id;
 
   insert into public.bank_accounts (
     user_id, name, official_name, current_balance, available_balance, mask, subtype
   ) values (
-    new.id, 'Rainy Day Savings', 'Delan High-Yield Savings',
+    new.id, 'Rainy Day Savings', 'First Grade High-Yield Savings',
     12150.00, 12150.00, '1907', 'savings'
   ) returning id into savings_id;
 
   insert into public.bank_accounts (
     user_id, name, official_name, current_balance, available_balance, mask, subtype
   ) values (
-    new.id, 'Travel Account', 'Delan Travel Checking',
+    new.id, 'Travel Account', 'First Grade Travel Checking',
     1735.20, 1735.20, '6634', 'checking'
   ) returning id into travel_id;
 
@@ -162,7 +162,7 @@ declare
   transfer_memo text := left(trim(coalesce(p_memo, '')), 120);
 begin
   if current_user_id is null then
-    raise exception 'You must be signed in to make a demo transfer';
+    raise exception 'You must be signed in to make a simulated transfer';
   end if;
 
   if p_amount is null or transfer_amount < 0.01 or transfer_amount > 10000 then
@@ -189,11 +189,11 @@ begin
   where id = p_receiver_account_id and user_id = current_user_id;
 
   if sender_balance is null or receiver_balance is null then
-    raise exception 'Choose two of your demo accounts';
+    raise exception 'Choose two of your simulated accounts';
   end if;
 
   if sender_balance < transfer_amount then
-    raise exception 'The selected account does not have enough demo funds';
+    raise exception 'The selected account does not have enough simulated funds';
   end if;
 
   update public.bank_accounts
@@ -217,10 +217,10 @@ begin
     user_id, account_id, transfer_id, name, amount, direction, category, payment_channel
   ) values
     (current_user_id, p_sender_account_id, transfer_id,
-      coalesce(nullif(transfer_memo, ''), 'Demo transfer sent'),
+      coalesce(nullif(transfer_memo, ''), 'Internal transfer sent'),
       transfer_amount, 'debit', 'Transfer', 'demo'),
     (current_user_id, p_receiver_account_id, transfer_id,
-      coalesce(nullif(transfer_memo, ''), 'Demo transfer received'),
+      coalesce(nullif(transfer_memo, ''), 'Internal transfer received'),
       transfer_amount, 'credit', 'Transfer', 'demo');
 
   return transfer_id;

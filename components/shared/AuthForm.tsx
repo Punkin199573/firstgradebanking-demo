@@ -13,12 +13,15 @@ import CustomInput from "./CustomInput";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { signUp, signIn } from "@/lib/actions/user.action";
+import ThemeToggle from "./ThemeToggle";
 
 const AuthForm = ({ type }: AuthFormProps) => {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+  const [accountCreatedWithSession, setAccountCreatedWithSession] =
+    useState(false);
 
   const formSchema = authFormSchema(type);
   const form = useForm<z.infer<typeof formSchema>>({
@@ -35,6 +38,7 @@ const AuthForm = ({ type }: AuthFormProps) => {
     setLoading(true);
     setError("");
     setMessage("");
+    setAccountCreatedWithSession(false);
 
     try {
       if (type === "sign-up") {
@@ -47,7 +51,19 @@ const AuthForm = ({ type }: AuthFormProps) => {
 
         if (result.requiresEmailConfirmation) {
           setMessage(
-            "Account created. Check your email to confirm your address, then sign in."
+            `Account created. Check your email to confirm your address. ${
+              result.accountEmail.sent
+                ? "Your synthetic account details were emailed."
+                : `The account-details email was not sent: ${result.accountEmail.reason}`
+            }`
+          );
+          return;
+        }
+
+        if (!result.accountEmail.sent) {
+          setAccountCreatedWithSession(true);
+          setMessage(
+            `Account created, but the synthetic account-details email was not sent: ${result.accountEmail.reason}`
           );
           return;
         }
@@ -57,11 +73,11 @@ const AuthForm = ({ type }: AuthFormProps) => {
         return;
       }
 
-      await signIn({
+      const user = await signIn({
         email: values.email,
         password: values.password,
       });
-      router.replace("/");
+      router.replace(user.role === "admin" ? "/admin" : "/");
       router.refresh();
     } catch (submitError) {
       setError(
@@ -77,20 +93,29 @@ const AuthForm = ({ type }: AuthFormProps) => {
   return (
     <section className="auth-form">
       <header className="flex flex-col gap-5 md:gap-8">
-        <Link href="/" className="flex cursor-pointer items-center gap-1">
-          <Image src="/icons/logo.svg" alt="logo" width={40} height={40} />
-          <h1 className="text-26 font-ibm-plex-serif font-bold text-black-1">
-            Delan
-          </h1>
-        </Link>
+        <div className="flex items-center justify-between gap-3">
+          <Link href="/" className="flex cursor-pointer items-center gap-2">
+            <Image src="/icons/logo.svg" alt="logo" width={40} height={40} />
+            <h1 className="text-18 font-semibold leading-tight text-black-1">
+              First Grade
+              <span className="block text-10 font-medium tracking-[0.16em] text-gray-500">
+                FINANCE
+              </span>
+            </h1>
+          </Link>
+          <ThemeToggle />
+        </div>
         <div className="flex flex-col gap-1 md:gap-3">
           <h1 className="text-24 font-semibold text-gray-900 lg:text-36">
-            {type === "sign-in" ? "Sign In" : "Create your demo account"}
+            {type === "sign-in" ? "Sign In" : "Create your account"}
           </h1>
           <p className="text-16 font-normal text-gray-600">
             {type === "sign-in"
               ? "Welcome back. Enter your credentials to continue."
-              : "Sign up to explore a fully simulated banking dashboard."}
+              : "Sign up to explore the First Grade Finance prototype."}
+          </p>
+          <p className="mt-2 rounded-xl border border-teal-100 bg-teal-50 px-3 py-2 text-12 text-teal-900">
+            Prototype · simulated balances only · not a bank or payment service
           </p>
         </div>
       </header>
@@ -98,18 +123,20 @@ const AuthForm = ({ type }: AuthFormProps) => {
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
           {type === "sign-up" && (
-            <div className="flex gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <CustomInput
                 control={form.control}
                 name="firstName"
                 label="First Name"
                 placeholder="First name"
+                autoComplete="given-name"
               />
               <CustomInput
                 control={form.control}
                 name="lastName"
                 label="Last Name"
                 placeholder="Last name"
+                autoComplete="family-name"
               />
             </div>
           )}
@@ -118,18 +145,23 @@ const AuthForm = ({ type }: AuthFormProps) => {
             name="email"
             label="Email"
             placeholder="you@example.com"
+            autoComplete="email"
           />
           <CustomInput
             control={form.control}
             name="password"
             label="Password"
             placeholder="At least 8 characters"
+            autoComplete={
+              type === "sign-in" ? "current-password" : "new-password"
+            }
           />
 
           {type === "sign-up" && (
             <p className="text-12 text-gray-600">
-              This is a demo only. Do not enter real banking, identity, or
-              financial information.
+              Prototype environment. Balances and transfers are simulated;
+              this service is not a bank and does not move real money. Do not
+              enter sensitive personal or financial information.
             </p>
           )}
           {error && (
@@ -141,6 +173,14 @@ const AuthForm = ({ type }: AuthFormProps) => {
             <p className="text-14 text-success-700" role="status">
               {message}
             </p>
+          )}
+          {accountCreatedWithSession && (
+            <Link
+              href="/"
+              className="inline-flex min-h-11 items-center justify-center rounded-xl bg-bankGradient px-4 text-14 font-semibold text-white"
+            >
+              Continue to dashboard
+            </Link>
           )}
 
           <Button
@@ -155,7 +195,7 @@ const AuthForm = ({ type }: AuthFormProps) => {
             ) : type === "sign-in" ? (
               "Sign In"
             ) : (
-              "Create Demo Account"
+              "Create Account"
             )}
           </Button>
         </form>

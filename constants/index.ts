@@ -100,6 +100,36 @@ export const transactionCategoryStyles = {
     textColor: "text-[#027A48]",
     chipBackgroundColor: "bg-[#ECFDF3]",
   },
+  Successful: {
+    borderColor: "border-[#12B76A]",
+    backgroundColor: "bg-[#12B76A]",
+    textColor: "text-[#027A48]",
+    chipBackgroundColor: "bg-[#ECFDF3]",
+  },
+  Pending: {
+    borderColor: "border-amber-300",
+    backgroundColor: "bg-amber-400",
+    textColor: "text-amber-800",
+    chipBackgroundColor: "bg-amber-50",
+  },
+  "On hold": {
+    borderColor: "border-orange-300",
+    backgroundColor: "bg-orange-400",
+    textColor: "text-orange-800",
+    chipBackgroundColor: "bg-orange-50",
+  },
+  "Action required": {
+    borderColor: "border-blue-300",
+    backgroundColor: "bg-blue-500",
+    textColor: "text-blue-800",
+    chipBackgroundColor: "bg-blue-50",
+  },
+  Failed: {
+    borderColor: "border-red-300",
+    backgroundColor: "bg-red-500",
+    textColor: "text-red-800",
+    chipBackgroundColor: "bg-red-50",
+  },
   default: {
     borderColor: "",
     backgroundColor: "bg-blue-500",

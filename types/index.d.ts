@@ -36,6 +36,8 @@ declare type Transaction = {
   accountId: string;
   amount: number;
   pending: boolean;
+  status: "pending" | "successful" | "on_hold" | "action_required" | "failed";
+  customerNotice: string;
   category: string;
   date: string;
 };

@@ -4,6 +4,7 @@ import Image from "next/image";
 import MobileNav from "@/components/shared/MobileNav";
 import { getLoggedInUser } from "@/lib/actions/user.action";
 import { redirect } from "next/navigation";
+import ThemeToggle from "@/components/shared/ThemeToggle";
 
 export const dynamic = "force-dynamic";
 
@@ -17,16 +18,22 @@ export default async function Layout({
     redirect("/sign-in");
   }
   return (
-    <main className="flex h-screen w-full font-inter">
+    <main className="app-shell flex h-dvh min-h-[100svh] w-full overflow-hidden font-inter">
       <Sidebar user={loggedIn} />
-      <div className="flex size-full flex-col">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col">
         <div className="root-layout">
-          <Image src="/icons/logo.svg" alt="menu" width={40} height={40} />
-          <div>
+          <div className="flex min-w-0 items-center gap-3">
+            <Image src="/icons/logo.svg" alt="" width={36} height={36} />
+            <span className="truncate text-14 font-semibold text-gray-900 sm:text-16">
+              First Grade Finance
+            </span>
+          </div>
+          <div className="flex shrink-0 items-center gap-2">
+            <ThemeToggle />
             <MobileNav user={loggedIn} />
           </div>
         </div>
-        {children}
+        <div className="min-h-0 min-w-0 flex-1 overflow-y-auto">{children}</div>
       </div>
     </main>
   );

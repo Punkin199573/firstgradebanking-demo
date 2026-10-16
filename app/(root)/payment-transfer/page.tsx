@@ -17,8 +17,8 @@ const TransferFunds = async () => {
   return (
     <section className="payment-transfer">
       <HeaderBox
-        title="Demo transfer"
-        subtext="Move simulated funds between your demo accounts."
+        title="Internal transfer"
+        subtext="Preview an internal transfer between your simulated accounts."
       />
       <section className="size-full pt-5">
         <PaymentTransferForm accounts={accounts.data} />

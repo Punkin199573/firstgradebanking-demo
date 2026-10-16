@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import {
   adjustDemoAccountBalance,
   recordDemoTransaction,
+  updateSimulatedTransaction,
 } from "@/lib/actions/admin.action";
 import { formatAmount } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -26,6 +27,25 @@ export default function AdminDashboard({ data }: { data: AdminData }) {
   const [transactionAmount, setTransactionAmount] = useState("");
   const [direction, setDirection] = useState<"debit" | "credit">("credit");
   const [category, setCategory] = useState("Adjustment");
+  const [newTransactionStatus, setNewTransactionStatus] =
+    useState<Transaction["status"]>("pending");
+  const [transactionStatus, setTransactionStatus] =
+    useState<Transaction["status"]>(
+      data.transactions.find(
+        (transaction) => transaction.user_id === data.users[0]?.id
+      )?.status ?? "pending"
+    );
+  const [newCustomerNotice, setNewCustomerNotice] = useState("");
+  const [customerNotice, setCustomerNotice] = useState(
+    data.transactions.find(
+      (transaction) => transaction.user_id === data.users[0]?.id
+    )?.customer_notice ?? ""
+  );
+  const [selectedTransactionId, setSelectedTransactionId] = useState(
+    data.transactions.find(
+      (transaction) => transaction.user_id === data.users[0]?.id
+    )?.id ?? ""
+  );
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -51,10 +71,14 @@ export default function AdminDashboard({ data }: { data: AdminData }) {
   const transactions = data.transactions.filter(
     (transaction) => transaction.user_id === selectedUserId
   );
+  const selectedTransaction =
+    transactions.find(
+      (transaction) => transaction.id === selectedTransactionId
+    ) ?? transactions[0];
 
   const submit = async (
     event: FormEvent<HTMLFormElement>,
-    action: "balance" | "transaction"
+    action: "balance" | "transaction" | "status"
   ) => {
     event.preventDefault();
     setError("");
@@ -62,25 +86,57 @@ export default function AdminDashboard({ data }: { data: AdminData }) {
     setBusy(true);
     try {
       if (action === "balance") {
-        await adjustDemoAccountBalance({
+        const result = await adjustDemoAccountBalance({
           accountId: selectedAccountId,
           balance: Number(balance),
           note: balanceNote,
         });
-        setNotice("Balance updated. An adjustment entry and audit record were created.");
+        setNotice(
+          `Balance updated and audit record created. ${
+            result.email.sent
+              ? "Customer notification email sent."
+              : `Customer email not sent: ${result.email.reason}`
+          }`
+        );
         setBalance("");
         setBalanceNote("");
-      } else {
-        await recordDemoTransaction({
+      } else if (action === "transaction") {
+        const result = await recordDemoTransaction({
           accountId: selectedAccountId,
           name: transactionName,
           amount: Number(transactionAmount),
           direction,
           category,
+          status: newTransactionStatus,
+          customerNotice: newCustomerNotice,
         });
-        setNotice("Demo transaction recorded and account balance updated.");
+        setNotice(
+          `${
+            newTransactionStatus === "successful"
+              ? "Simulated transaction recorded and account balance updated."
+              : "Simulated transaction recorded. No balance change was made."
+          } ${
+            result.email.sent
+              ? "Customer notification email sent."
+              : `Customer email not sent: ${result.email.reason}`
+          }`
+        );
         setTransactionName("");
         setTransactionAmount("");
+        setNewCustomerNotice("");
+      } else if (selectedTransaction) {
+        const result = await updateSimulatedTransaction({
+          transactionId: selectedTransaction.id,
+          status: transactionStatus,
+          customerNotice,
+        });
+        setNotice(
+          `Transaction status and customer notice updated. ${
+            result.email.sent
+              ? "Customer notification email sent."
+              : `Customer email not sent: ${result.email.reason}`
+          }`
+        );
       }
       router.refresh();
     } catch (submitError) {
@@ -95,22 +151,31 @@ export default function AdminDashboard({ data }: { data: AdminData }) {
   };
 
   return (
-    <section className="flex h-full w-full flex-col gap-7 overflow-y-auto bg-gray-25 p-5 sm:p-8">
-      <header className="flex flex-col gap-2">
-        <p className="text-12 font-semibold uppercase tracking-[0.16em] text-blue-700">
-          DelanBank · Operations
-        </p>
-        <h1 className="text-30 font-semibold text-gray-900">Admin console</h1>
-        <p className="max-w-3xl text-14 text-gray-600">
-          Review demo users, inspect their account and transaction activity, and
-          make audited changes. Every balance and transaction is simulated.
-        </p>
+    <section className="admin-console flex h-full w-full flex-col gap-7 overflow-y-auto bg-gray-25 p-5 sm:p-8">
+      <header className="admin-hero relative overflow-hidden rounded-3xl p-6 text-white sm:p-9">
+        <div className="relative z-10 max-w-3xl">
+          <p className="text-12 font-semibold uppercase tracking-[0.2em] text-teal-200">
+            First Grade Finance · Operations
+          </p>
+          <h1 className="mt-3 text-30 font-semibold sm:text-36">
+            Admin command center
+          </h1>
+          <p className="mt-3 max-w-2xl text-14 leading-6 text-slate-300">
+            Manage simulated accounts, transaction lifecycles, and customer
+            notices. All changes are audited; no real funds move. Customer email
+            alerts require the configured transactional email provider.
+          </p>
+          <span className="mt-5 inline-flex items-center gap-2 rounded-full border border-amber-300/30 bg-amber-200/10 px-3 py-1.5 text-12 font-medium text-amber-100">
+            Prototype environment · simulated data
+          </span>
+        </div>
+        <div aria-hidden="true" className="admin-hero-orbit" />
       </header>
 
       <div className="grid gap-4 sm:grid-cols-3">
-        <Metric label="Registered users" value={String(data.users.length)} />
+        <Metric label="Registered profiles" value={String(data.users.length)} />
         <Metric
-          label="Demo accounts"
+          label="Simulated accounts"
           value={String(data.accounts.length)}
         />
         <Metric
@@ -148,6 +213,12 @@ export default function AdminDashboard({ data }: { data: AdminData }) {
                 onClick={() => {
                   setSelectedUserId(user.id);
                   setAccountId("");
+                  setSelectedTransactionId("");
+                  const firstTransaction = data.transactions.find(
+                    (transaction) => transaction.user_id === user.id
+                  );
+                  setTransactionStatus(firstTransaction?.status ?? "pending");
+                  setCustomerNotice(firstTransaction?.customer_notice ?? "");
                 }}
                 className={`rounded-xl border p-3 text-left transition ${
                   selectedUserId === user.id
@@ -191,7 +262,7 @@ export default function AdminDashboard({ data }: { data: AdminData }) {
                 )}
               </div>
               <span className="rounded-full bg-amber-50 px-3 py-1 text-12 font-medium text-amber-800">
-                Demo data only
+                Simulated profile
               </span>
             </div>
 
@@ -214,7 +285,7 @@ export default function AdminDashboard({ data }: { data: AdminData }) {
             {account ? (
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
                 <Detail label="Account number" value={account.account_number} />
-                <Detail label="Demo routing number" value={account.routing_number} />
+                <Detail label="Synthetic routing number" value={account.routing_number} />
                 <Detail
                   label="Available balance"
                   value={formatAmount(Number(account.available_balance))}
@@ -226,7 +297,7 @@ export default function AdminDashboard({ data }: { data: AdminData }) {
               </div>
             ) : (
               <p className="mt-5 rounded-lg bg-gray-25 p-4 text-14 text-gray-600">
-                This user has no demo account yet.
+                This user has no simulated account yet.
               </p>
             )}
             <p className="mt-4 text-12 text-gray-500">
@@ -242,7 +313,7 @@ export default function AdminDashboard({ data }: { data: AdminData }) {
                 className="rounded-2xl border border-gray-200 bg-white p-5 shadow-chart"
               >
                 <h2 className="text-16 font-semibold text-gray-900">
-                  Adjust demo balance
+                  Adjust simulated balance
                 </h2>
                 <p className="mt-1 text-12 text-gray-600">
                   The change is appended to the user&apos;s ledger and admin
@@ -281,10 +352,10 @@ export default function AdminDashboard({ data }: { data: AdminData }) {
                 className="rounded-2xl border border-gray-200 bg-white p-5 shadow-chart"
               >
                 <h2 className="text-16 font-semibold text-gray-900">
-                  Record demo transaction
+                  Record simulated transaction
                 </h2>
                 <p className="mt-1 text-12 text-gray-600">
-                  Debits and credits update balances; overdrafts are blocked.
+                  Only successful entries update balances; overdrafts are blocked.
                 </p>
                 <label className="mt-4 flex flex-col gap-2 text-12 font-semibold text-gray-600">
                   Description
@@ -335,12 +406,155 @@ export default function AdminDashboard({ data }: { data: AdminData }) {
                     onChange={(event) => setCategory(event.target.value)}
                   />
                 </label>
+                <label className="mt-3 flex flex-col gap-2 text-12 font-semibold text-gray-600">
+                  Initial status
+                  <select
+                    className="input-class bg-white"
+                    value={newTransactionStatus}
+                    onChange={(event) =>
+                      setNewTransactionStatus(
+                        event.target.value as Transaction["status"]
+                      )
+                    }
+                  >
+                    <option value="pending">Pending</option>
+                    <option value="successful">Successful</option>
+                    <option value="on_hold">On hold</option>
+                    <option value="action_required">Action required</option>
+                    <option value="failed">Failed</option>
+                  </select>
+                </label>
+                <label className="mt-3 flex flex-col gap-2 text-12 font-semibold text-gray-600">
+                  Customer notice (optional)
+                  <textarea
+                    className="input-class min-h-24 resize-y bg-white p-3"
+                    maxLength={500}
+                    placeholder="For example: Please contact support for assistance."
+                    value={newCustomerNotice}
+                    onChange={(event) => setNewCustomerNotice(event.target.value)}
+                  />
+                </label>
+                <p className="mt-2 text-12 leading-5 text-gray-500">
+                  Only a successful simulated transaction changes the displayed
+                  balance. Notices appear in the customer transaction history
+                  and are emailed when transactional email is configured.
+                </p>
                 <Button className="mt-4 w-full" type="submit" disabled={busy}>
                   Record transaction
                 </Button>
               </form>
             </div>
           )}
+
+          <section className="rounded-2xl border border-gray-200 bg-white p-5 shadow-chart sm:p-6">
+            <div>
+              <h2 className="text-18 font-semibold text-gray-900">
+                Transaction status &amp; customer notice
+              </h2>
+              <p className="mt-1 max-w-3xl text-12 leading-5 text-gray-600">
+                Move an open simulated transaction through review, hold,
+                support-required, or final states. Final states cannot be
+                changed. Notices are shown in-app and emailed when configured.
+              </p>
+            </div>
+            {transactions.length > 0 ? (
+              <form
+                onSubmit={(event) => submit(event, "status")}
+                className="mt-5 grid gap-4 lg:grid-cols-2"
+              >
+                <label className="flex flex-col gap-2 text-12 font-semibold text-gray-600">
+                  Transaction
+                  <select
+                    className="input-class bg-white"
+                    value={selectedTransaction?.id ?? ""}
+                    onChange={(event) => {
+                      const next = transactions.find(
+                        (item) => item.id === event.target.value
+                      );
+                      setSelectedTransactionId(event.target.value);
+                      if (next) {
+                        setTransactionStatus(next.status);
+                        setCustomerNotice(next.customer_notice);
+                      }
+                    }}
+                  >
+                    {transactions.map((transaction) => (
+                      <option key={transaction.id} value={transaction.id}>
+                        {transaction.name} · {transaction.status.replaceAll("_", " ")}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="flex flex-col gap-2 text-12 font-semibold text-gray-600">
+                  New status
+                  <select
+                    className="input-class bg-white"
+                    value={transactionStatus}
+                    disabled={
+                      !selectedTransaction ||
+                      ["successful", "failed"].includes(
+                        selectedTransaction.status
+                      )
+                    }
+                    onChange={(event) =>
+                      setTransactionStatus(
+                        event.target.value as Transaction["status"]
+                      )
+                    }
+                  >
+                    <option value="pending">Pending</option>
+                    <option value="successful">Successful</option>
+                    <option value="on_hold">On hold</option>
+                    <option value="action_required">Action required</option>
+                    <option value="failed">Failed</option>
+                  </select>
+                </label>
+                <label className="flex flex-col gap-2 text-12 font-semibold text-gray-600 lg:col-span-2">
+                  Customer-facing notice
+                  <textarea
+                    className="input-class min-h-24 resize-y bg-white p-3"
+                    maxLength={500}
+                    placeholder="A clear update for the customer, such as how to contact support."
+                    value={customerNotice}
+                    onChange={(event) => setCustomerNotice(event.target.value)}
+                    disabled={
+                      !selectedTransaction ||
+                      ["successful", "failed"].includes(
+                        selectedTransaction.status
+                      )
+                    }
+                  />
+                </label>
+                {selectedTransaction &&
+                  ["successful", "failed"].includes(
+                    selectedTransaction.status
+                  ) && (
+                    <p className="text-12 text-gray-500 lg:col-span-2">
+                      This transaction has a final status and cannot be edited.
+                    </p>
+                  )}
+                <div className="lg:col-span-2">
+                  <Button
+                    className="w-full sm:w-auto"
+                    type="submit"
+                    disabled={
+                      busy ||
+                      !selectedTransaction ||
+                      ["successful", "failed"].includes(
+                        selectedTransaction.status
+                      )
+                    }
+                  >
+                    Save status and notice
+                  </Button>
+                </div>
+              </form>
+            ) : (
+              <p className="mt-4 rounded-xl bg-gray-25 p-4 text-14 text-gray-600">
+                No transactions are available for this profile yet.
+              </p>
+            )}
+          </section>
 
           <section className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-chart">
             <div className="border-b border-gray-200 p-5">
@@ -360,6 +574,7 @@ export default function AdminDashboard({ data }: { data: AdminData }) {
                     <th className="p-3">Description</th>
                     <th className="p-3">Account</th>
                     <th className="p-3">Direction</th>
+                    <th className="p-3">Status</th>
                     <th className="p-3 text-right">Amount</th>
                   </tr>
                 </thead>
@@ -375,10 +590,18 @@ export default function AdminDashboard({ data }: { data: AdminData }) {
                       <td className="p-3 text-gray-600">
                         {data.accounts.find(
                           (item) => item.id === transaction.account_id
-                        )?.name ?? "Demo account"}
+                        )?.name ?? "Simulated account"}
                       </td>
                       <td className="p-3 capitalize text-gray-600">
                         {transaction.direction}
+                      </td>
+                      <td className="p-3 capitalize text-gray-600">
+                        {transaction.status.replaceAll("_", " ")}
+                        {transaction.customer_notice && (
+                          <p className="mt-1 max-w-56 normal-case text-10 text-gray-500">
+                            {transaction.customer_notice}
+                          </p>
+                        )}
                       </td>
                       <td className="whitespace-nowrap p-3 text-right font-semibold text-gray-900">
                         {transaction.direction === "debit" ? "−" : "+"}
@@ -388,7 +611,7 @@ export default function AdminDashboard({ data }: { data: AdminData }) {
                   ))}
                   {transactions.length === 0 && (
                     <tr>
-                      <td colSpan={5} className="p-8 text-center text-gray-500">
+                      <td colSpan={6} className="p-8 text-center text-gray-500">
                         No transactions for this user.
                       </td>
                     </tr>

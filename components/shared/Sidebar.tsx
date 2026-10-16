@@ -24,7 +24,12 @@ const Sidebar = ({ user }: SiderbarProps) => {
             height={40}
             className="size-[60px] max-xl:size-30"
           />
-          <h1 className="sidebar-logo">Delan</h1>
+          <h1 className="sidebar-logo">
+            First Grade
+            <span className="block text-12 font-medium tracking-[0.08em] text-gray-500">
+              FINANCE
+            </span>
+          </h1>
         </Link>
         {[...sidebarLinks,
           ...(user.role === "admin"
@@ -38,7 +43,7 @@ const Sidebar = ({ user }: SiderbarProps) => {
               key={link.label}
               className={cn("sidebar-link", {
                 "bg-bankGradient": isActive,
-                "hover:bg-purple-500 hover:animate-pulse": !isActive,
+                "hover:bg-teal-50": !isActive,
               })}
             >
               <div className="size-6  relative ">

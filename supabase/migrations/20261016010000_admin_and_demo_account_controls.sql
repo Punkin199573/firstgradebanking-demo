@@ -4,7 +4,7 @@ alter table public.profiles
 
 alter table public.bank_accounts
   add column account_number text not null
-    default ('DEMO' || upper(substr(replace(gen_random_uuid()::text, '-', ''), 1, 12))),
+    default ('FGF' || upper(substr(replace(gen_random_uuid()::text, '-', ''), 1, 12))),
   add column routing_number text not null default '000000000'
     check (routing_number ~ '^[0-9]{9}$'),
   add column is_demo boolean not null default true;
@@ -99,7 +99,7 @@ declare
   transfer_memo text := left(trim(coalesce(p_memo, '')), 120);
 begin
   if current_user_id is null then
-    raise exception 'You must be signed in to make a demo transfer';
+    raise exception 'You must be signed in to make a simulated transfer';
   end if;
   if p_amount is null or p_amount::text = 'NaN'
      or p_amount < 0.01 or p_amount > 10000
@@ -108,7 +108,7 @@ begin
   end if;
   if p_sender_account_id is null or p_receiver_account_id is null
      or p_sender_account_id = p_receiver_account_id then
-    raise exception 'Choose two different demo accounts';
+    raise exception 'Choose two different simulated accounts';
   end if;
 
   perform id
@@ -132,10 +132,10 @@ begin
     and is_demo;
 
   if sender_balance is null or receiver_balance is null then
-    raise exception 'Choose two of your demo accounts';
+    raise exception 'Choose two of your simulated accounts';
   end if;
   if sender_balance < transfer_amount then
-    raise exception 'The selected account does not have enough demo funds';
+    raise exception 'The selected account does not have enough simulated funds';
   end if;
 
   update public.bank_accounts
@@ -160,10 +160,10 @@ begin
     category, payment_channel, pending
   ) values
     (current_user_id, p_sender_account_id, transfer_id,
-      coalesce(nullif(transfer_memo, ''), 'Demo transfer sent'),
+      coalesce(nullif(transfer_memo, ''), 'Internal transfer sent'),
       transfer_amount, 'debit', 'Transfer', 'demo', false),
     (current_user_id, p_receiver_account_id, transfer_id,
-      coalesce(nullif(transfer_memo, ''), 'Demo transfer received'),
+      coalesce(nullif(transfer_memo, ''), 'Internal transfer received'),
       transfer_amount, 'credit', 'Transfer', 'demo', false);
 
   return transfer_id;
@@ -215,7 +215,7 @@ begin
   where id = p_account_id and is_demo
   for update;
   if not found then
-    raise exception 'Demo account not found';
+    raise exception 'Simulated account not found';
   end if;
 
   old_balance := target_account.current_balance;
@@ -299,7 +299,7 @@ begin
   where id = p_account_id and is_demo
   for update;
   if not found then
-    raise exception 'Demo account not found';
+    raise exception 'Simulated account not found';
   end if;
 
   next_balance := case
@@ -307,7 +307,7 @@ begin
     else target_account.current_balance - transaction_amount
   end;
   if next_balance < 0 or next_balance > 99999999.99 then
-    raise exception 'The transaction would put the demo account outside its supported balance range';
+    raise exception 'The transaction would put the simulated account outside its supported balance range';
   end if;
 
   update public.bank_accounts

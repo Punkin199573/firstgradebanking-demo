@@ -25,7 +25,7 @@ const TransactionHistory = async ({
       <section className="transactions">
         <HeaderBox
           title="Transaction History"
-          subtext="Your demo account transactions will appear here."
+          subtext="Your account activity will appear here."
         />
       </section>
     );
@@ -36,7 +36,7 @@ const TransactionHistory = async ({
       <div className="transactions-header">
         <HeaderBox
           title="Transaction History"
-          subtext="See your bank details and transactions"
+          subtext="Review account activity in this simulated prototype."
         />
       </div>
       <div className="space-y-6">

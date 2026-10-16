@@ -2,6 +2,36 @@
 @tailwind components;
 @tailwind utilities;
 
+html {
+  background: #f3f7f6;
+}
+
+.sheet-content {
+  max-width: 100vw;
+}
+
+body {
+  color: #102e3a;
+  background: #f3f7f6;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+button,
+a,
+input,
+select,
+textarea {
+  -webkit-tap-highlight-color: transparent;
+}
+
+:focus-visible {
+  outline: 2px solid #149581;
+  outline-offset: 2px;
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -45,7 +75,7 @@
 
 @layer utilities {
   .input-class {
-    @apply text-16 placeholder:text-16 rounded-lg border border-gray-300 text-gray-900 placeholder:text-gray-500;
+    @apply w-full rounded-xl border border-gray-300 bg-white px-3 py-2.5 text-14 text-gray-900 transition placeholder:text-14 placeholder:text-gray-500 focus:border-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-700/20 disabled:cursor-not-allowed disabled:opacity-60;
   }
 
   .sheet-content button {
@@ -106,11 +136,11 @@
 
   /* Home */
   .home {
-    @apply no-scrollbar flex w-full flex-row max-xl:max-h-screen max-xl:overflow-y-scroll;
+    @apply flex min-h-full w-full flex-row;
   }
 
   .home-content {
-    @apply no-scrollbar flex w-full flex-1 flex-col gap-8 px-5 sm:px-8 py-7 lg:py-12 xl:max-h-screen xl:overflow-y-scroll;
+    @apply flex min-w-0 w-full flex-1 flex-col gap-8 px-4 py-6 sm:px-8 sm:py-8 lg:py-10;
   }
 
   .home-header {
@@ -155,7 +185,7 @@
 
   /* Right sidebar */
   .right-sidebar {
-    @apply no-scrollbar hidden h-screen max-h-screen flex-col border-l border-gray-200 xl:flex w-[355px] xl:overflow-y-scroll !important;
+    @apply hidden min-h-full w-[320px] shrink-0 flex-col border-l border-gray-200 xl:flex 2xl:w-[355px];
   }
 
   .profile-banner {
@@ -188,12 +218,12 @@
 
   /* My Banks */
   .my-banks {
-    @apply flex h-screen max-h-screen w-full flex-col gap-8 bg-gray-25 p-8 xl:py-12;
+    @apply flex min-h-full w-full flex-col gap-8 bg-gray-25 p-4 sm:p-8 xl:py-10;
   }
 
   /* My Banks */
   .transactions {
-    @apply flex max-h-screen w-full flex-col gap-8 overflow-y-scroll bg-gray-25 p-8 xl:py-12;
+    @apply flex min-h-full w-full flex-col gap-6 overflow-x-hidden bg-gray-25 p-4 sm:gap-8 sm:p-8 xl:py-10;
   }
 
   .transactions-header {
@@ -270,8 +300,64 @@
   }
 
   /* Auth */
+  .auth-layout {
+    @apply flex min-h-screen w-full bg-gray-25 font-inter;
+  }
+
+  .auth-content {
+    @apply flex min-h-screen w-full flex-1 items-center justify-center px-6 py-8 sm:px-10 xl:w-1/2 xl:px-20;
+  }
+
   .auth-asset {
-    @apply flex h-screen w-full sticky top-0 items-center justify-end bg-sky-1 max-lg:hidden;
+    @apply sticky top-0 hidden h-screen w-1/2 shrink-0 items-center justify-center overflow-hidden px-10 py-12 xl:flex xl:px-16;
+    background:
+      radial-gradient(ellipse at 76% 18%, rgba(38, 194, 165, 0.22), transparent 34%),
+      radial-gradient(ellipse at 0% 100%, rgba(19, 119, 129, 0.28), transparent 44%),
+      linear-gradient(145deg, #0c1d2b 0%, #102e40 54%, #0b4549 100%);
+  }
+
+  .auth-showcase {
+    @apply flex w-full max-w-[600px] flex-col gap-10;
+  }
+
+  .auth-brand-icon {
+    @apply flex size-11 items-center justify-center rounded-2xl border border-white/10 bg-white/10 text-teal-200;
+  }
+
+  .auth-demo-badge {
+    @apply inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-2 text-12 font-medium text-slate-100;
+  }
+
+  .auth-showcase-copy {
+    @apply mt-4;
+  }
+
+  .auth-preview-card {
+    @apply rounded-3xl border border-white/10 bg-white/[0.07] p-5 shadow-2xl backdrop-blur-sm sm:p-6;
+  }
+
+  .auth-sample-badge {
+    @apply rounded-lg border border-teal-200/20 bg-teal-200/10 px-2.5 py-1.5 text-10 font-bold tracking-[0.12em] text-teal-100;
+  }
+
+  .auth-preview-account {
+    @apply mt-6 flex items-center gap-3 rounded-2xl border border-white/10 bg-slate-950/20 p-4;
+  }
+
+  .auth-preview-note {
+    @apply mt-4 flex items-center gap-2 text-12 text-slate-300;
+  }
+
+  .auth-showcase-points {
+    @apply flex flex-col gap-3 text-14 text-slate-200;
+  }
+
+  .auth-showcase-points li {
+    @apply flex items-center gap-2.5;
+  }
+
+  .auth-showcase-points svg {
+    @apply shrink-0 text-teal-200;
   }
 
   /* Auth Form */
@@ -299,9 +385,13 @@
     @apply text-14 cursor-pointer font-medium text-bankGradient;
   }
 
+  .password-visibility-toggle {
+    @apply absolute right-2 top-1/2 flex size-9 -translate-y-1/2 items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900;
+  }
+
   /* Payment Transfer */
   .payment-transfer {
-    @apply no-scrollbar flex flex-col overflow-y-scroll bg-gray-25 p-8 md:max-h-screen xl:py-12;
+    @apply flex min-h-full w-full flex-col gap-6 overflow-x-hidden bg-gray-25 p-4 sm:p-8 xl:py-10;
   }
 
   .payment-transfer_form-item {
@@ -326,7 +416,7 @@
 
   /* Root Layout */
   .root-layout {
-    @apply flex h-16 items-center justify-between p-5 shadow-creditCard sm:p-8 md:hidden;
+    @apply sticky top-0 z-30 flex h-16 shrink-0 items-center justify-between border-b border-gray-200 bg-white px-4 sm:px-6;
   }
 
   /* Bank Info */
@@ -365,18 +455,392 @@
 
   /* Sidebar */
   .sidebar {
-    @apply sticky left-0 top-0 flex h-screen w-fit flex-col  justify-between border-r border-gray-200 bg-white pt-8 text-white max-md:hidden sm:p-4 xl:p-6 2xl:w-[355px];
+    @apply sticky left-0 top-0 hidden h-dvh w-[224px] shrink-0 flex-col justify-between border-r border-gray-200 bg-white pt-6 text-white md:flex md:p-3 xl:w-[280px] xl:p-5 2xl:w-[320px];
   }
 
   .sidebar-logo {
-    @apply 2xl:text-26 font-ibm-plex-serif text-[26px] font-bold text-black-1 max-xl:hidden;
+    @apply font-inter text-20 font-bold leading-tight tracking-[-0.04em] text-black-1 max-xl:hidden;
   }
 
   .sidebar-link {
-    @apply flex gap-3 items-center py-1 md:p-3 2xl:p-4 rounded-lg justify-center xl:justify-start;
+    @apply flex min-h-12 items-center justify-start gap-3 rounded-xl px-3 py-2 transition-colors;
   }
 
   .sidebar-label {
-    @apply text-16 font-semibold text-black-2 max-xl:hidden;
+    @apply text-14 font-semibold text-black-2;
+  }
+
+  .admin-hero {
+    background:
+      radial-gradient(ellipse at 85% 20%, rgba(30, 194, 166, 0.2), transparent 38%),
+      linear-gradient(120deg, #0b1f34 0%, #123c4d 58%, #0d625b 100%);
+    box-shadow: 0 20px 45px -28px rgba(10, 32, 55, 0.65);
+  }
+
+  .admin-hero-orbit {
+    position: absolute;
+    top: -8rem;
+    right: -3rem;
+    width: 26rem;
+    height: 26rem;
+    border: 1px solid rgba(131, 238, 217, 0.2);
+    border-radius: 9999px;
+    box-shadow:
+      0 0 0 2.5rem rgba(131, 238, 217, 0.035),
+      0 0 0 5rem rgba(131, 238, 217, 0.025);
+    pointer-events: none;
+  }
+
+  @media (max-width: 640px) {
+    .admin-hero-orbit {
+      right: -15rem;
+    }
+  }
+
+  .theme-toggle,
+  .mobile-menu-trigger {
+    display: inline-flex;
+    min-height: 2.5rem;
+    min-width: 2.5rem;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border: 1px solid #d8e1e0;
+    border-radius: 0.75rem;
+    background: #fff;
+    padding: 0.5rem 0.75rem;
+    color: #163547;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    transition: background-color 150ms ease, border-color 150ms ease;
+  }
+
+  .theme-toggle:hover,
+  .mobile-menu-trigger:hover {
+    border-color: #80cbbd;
+    background: #f0f8f6;
+  }
+
+  .mobile-menu-trigger {
+    padding: 0.5rem;
+  }
+
+  .transactions-table-scroll {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    border: 1px solid #e5eceb;
+    border-radius: 1rem;
+    background: #fff;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .mobile-nav-sheet {
+    width: min(20rem, calc(100vw - 2rem)) !important;
+    max-width: 100vw;
+  }
+
+  .transactions-account {
+    border: 0;
+    border-radius: 1.25rem;
+    background:
+      radial-gradient(circle at 95% 0%, rgba(70, 214, 185, 0.28), transparent 34%),
+      linear-gradient(120deg, #10283a 0%, #155a5c 100%);
+    box-shadow: 0 18px 42px -25px rgba(10, 32, 55, 0.65);
+  }
+
+  .transfer-dialog-backdrop {
+    position: fixed;
+    z-index: 80;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    overflow-y: auto;
+    padding: max(1rem, env(safe-area-inset-top)) 1rem
+      max(1rem, env(safe-area-inset-bottom));
+    background: rgba(5, 17, 27, 0.72);
+    backdrop-filter: blur(8px);
+  }
+
+  .transfer-dialog {
+    position: relative;
+    width: min(100%, 29rem);
+    max-height: min(90dvh, 48rem);
+    overflow-y: auto;
+    border: 1px solid rgba(220, 232, 233, 0.8);
+    border-radius: 1.5rem;
+    background: #fff;
+    padding: clamp(1.25rem, 5vw, 2rem);
+    box-shadow: 0 30px 80px -35px rgba(0, 0, 0, 0.65);
+  }
+
+  .transfer-dialog-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    display: grid;
+    width: 2.5rem;
+    height: 2.5rem;
+    place-items: center;
+    border-radius: 0.75rem;
+    color: #617583;
+  }
+
+  .transfer-dialog-close:hover {
+    background: #f0f5f5;
+  }
+
+  .transfer-pending-icon {
+    display: grid;
+    width: 3.5rem;
+    height: 3.5rem;
+    place-items: center;
+    border: 1px solid #f5d88c;
+    border-radius: 1.125rem;
+    background: #fff8e7;
+    color: #b7791f;
+  }
+
+  .bank-card {
+    min-width: min(330px, calc(100vw - 2rem));
+  }
+
+  @media (max-width: 767px) {
+    .home {
+      display: block;
+    }
+
+    .my-banks,
+    .transactions,
+    .payment-transfer {
+      padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+    }
+
+    .bank-card {
+      max-width: min(330px, calc(100vw - 2rem));
+    }
+
+    .admin-console {
+      padding: 1rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      scroll-behavior: auto !important;
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  html[data-theme="dark"] {
+    color-scheme: dark;
+    background: #0a1723;
+  }
+
+  html[data-theme="dark"] body {
+    color: #e7f0f4;
+    background: #0a1723;
+  }
+
+  html[data-theme="dark"] .bg-white,
+  html[data-theme="dark"] .sheet-content,
+  html[data-theme="dark"] .mobile-nav-sheet {
+    background-color: #122536 !important;
+  }
+
+  html[data-theme="dark"] .bg-gray-25,
+  html[data-theme="dark"] .bg-gray-50,
+  html[data-theme="dark"] .bg-blue-25 {
+    background-color: #0d1d2b !important;
+  }
+
+  html[data-theme="dark"] .bg-gray-100,
+  html[data-theme="dark"] .bg-blue-100,
+  html[data-theme="dark"] .bg-teal-50,
+  html[data-theme="dark"] .bg-success-25,
+  html[data-theme="dark"] .bg-green-25,
+  html[data-theme="dark"] .bg-pink-25,
+  html[data-theme="dark"] .bg-pink-100,
+  html[data-theme="dark"] .hover\:bg-gray-25:hover,
+  html[data-theme="dark"] .hover\:bg-teal-50:hover {
+    background-color: #1b3445 !important;
+  }
+
+  html[data-theme="dark"] .border-gray-100,
+  html[data-theme="dark"] .border-gray-200,
+  html[data-theme="dark"] .border-gray-300 {
+    border-color: #294252 !important;
+  }
+
+  html[data-theme="dark"] .text-gray-900,
+  html[data-theme="dark"] .text-black-1,
+  html[data-theme="dark"] .text-black-2 {
+    color: #e7f0f4 !important;
+  }
+
+  html[data-theme="dark"] .text-gray-800,
+  html[data-theme="dark"] .text-gray-700,
+  html[data-theme="dark"] .text-gray-600,
+  html[data-theme="dark"] .text-gray-500 {
+    color: #a9bdc8 !important;
+  }
+
+  html[data-theme="dark"] .text-blue-900,
+  html[data-theme="dark"] .text-blue-800,
+  html[data-theme="dark"] .text-blue-700 {
+    color: #9bcdf8 !important;
+  }
+
+  html[data-theme="dark"] .text-success-900,
+  html[data-theme="dark"] .text-success-700,
+  html[data-theme="dark"] .text-green-700 {
+    color: #8bdfb6 !important;
+  }
+
+  html[data-theme="dark"] .text-red-700,
+  html[data-theme="dark"] .text-red-600 {
+    color: #ffaaa3 !important;
+  }
+
+  html[data-theme="dark"] .text-pink-900,
+  html[data-theme="dark"] .text-pink-700 {
+    color: #f3b4db !important;
+  }
+
+  html[data-theme="dark"] .input-class,
+  html[data-theme="dark"] input,
+  html[data-theme="dark"] textarea,
+  html[data-theme="dark"] select {
+    border-color: #365366;
+    background-color: #102333;
+    color: #e7f0f4;
+  }
+
+  html[data-theme="dark"] input::placeholder,
+  html[data-theme="dark"] textarea::placeholder {
+    color: #8da5b3;
+  }
+
+  html[data-theme="dark"] option {
+    background: #102333;
+    color: #e7f0f4;
+  }
+
+  html[data-theme="dark"] .root-layout,
+  html[data-theme="dark"] .sidebar {
+    border-color: #263e4f;
+    background-color: #102131;
+  }
+
+  html[data-theme="dark"] .theme-toggle,
+  html[data-theme="dark"] .mobile-menu-trigger {
+    border-color: #355164;
+    background: #172c3d;
+    color: #e7f0f4;
+  }
+
+  html[data-theme="dark"] .theme-toggle:hover,
+  html[data-theme="dark"] .mobile-menu-trigger:hover {
+    background: #203b4d;
+  }
+
+  html[data-theme="dark"] .bg-amber-50,
+  html[data-theme="dark"] .bg-amber-100,
+  html[data-theme="dark"] .bg-success-50,
+  html[data-theme="dark"] .bg-red-50,
+  html[data-theme="dark"] .bg-\[\#ECFDF3\],
+  html[data-theme="dark"] .bg-\[\#F6FEF9\] {
+    background-color: #263341 !important;
+  }
+
+  html[data-theme="dark"] .text-amber-800,
+  html[data-theme="dark"] .text-amber-700 {
+    color: #e6c784 !important;
+  }
+
+  html[data-theme="dark"] .right-sidebar {
+    background: #0d1d2b;
+  }
+
+  html[data-theme="dark"] .auth-asset {
+    background:
+      radial-gradient(ellipse at 76% 18%, rgba(38, 194, 165, 0.18), transparent 34%),
+      radial-gradient(ellipse at 0% 100%, rgba(19, 119, 129, 0.22), transparent 44%),
+      linear-gradient(145deg, #081521 0%, #0d2534 54%, #08383a 100%);
+  }
+
+  html[data-theme="dark"] .auth-layout {
+    background: #0a1723;
+  }
+
+  html[data-theme="dark"] .password-visibility-toggle {
+    color: #a9bdc8;
+  }
+
+  html[data-theme="dark"] .password-visibility-toggle:hover {
+    background: #20394a;
+    color: #e7f0f4;
+  }
+
+  html[data-theme="dark"] .profile-img,
+  html[data-theme="dark"] .footer_name,
+  html[data-theme="dark"] .footer_name-mobile {
+    border-color: #122536;
+    background-color: #20394a;
+  }
+
+  html[data-theme="dark"] .transactions-account-balance {
+    background-color: rgba(255, 255, 255, 0.12);
+  }
+
+  html[data-theme="dark"] .admin-hero {
+    background:
+      radial-gradient(ellipse at 85% 20%, rgba(30, 194, 166, 0.24), transparent 38%),
+      linear-gradient(120deg, #071321 0%, #102f40 58%, #0b514c 100%);
+  }
+
+  html[data-theme="dark"] .transactions tbody tr {
+    background-color: #102333 !important;
+  }
+
+  html[data-theme="dark"] .transactions-table-scroll {
+    border-color: #294252;
+    background: #122536;
+  }
+
+  html[data-theme="dark"] .transactions-table-scroll thead {
+    background-color: #1b3445;
+  }
+
+  html[data-theme="dark"] .transactions-table-scroll .text-\[\#344054\] {
+    color: #d9e6ec;
+  }
+
+  html[data-theme="dark"] .transactions-table-scroll .text-\[\#f04438\] {
+    color: #ffa6a0;
+  }
+
+  html[data-theme="dark"] .transactions-table-scroll .text-\[\#039855\] {
+    color: #7de0b2;
+  }
+
+  html[data-theme="dark"] .transfer-form-card,
+  html[data-theme="dark"] .transfer-dialog {
+    border-color: #294252;
+    background-color: #122536;
+  }
+
+  html[data-theme="dark"] .transfer-dialog-close:hover {
+    background: #20394a;
+  }
+
+  html[data-theme="dark"] .transfer-pending-icon {
+    border-color: #765d32;
+    background: #3c3424;
+    color: #f0cc77;
   }
 }

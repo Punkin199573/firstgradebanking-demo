@@ -3,6 +3,66 @@
 import { revalidatePath } from "next/cache";
 import { getLoggedInUser } from "@/lib/actions/user.action";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { formatTransactionEmail, sendTransactionalEmail } from "@/lib/email";
+
+const transactionStatuses = [
+  "pending",
+  "successful",
+  "on_hold",
+  "action_required",
+  "failed",
+] as const;
+
+type TransactionStatus = (typeof transactionStatuses)[number];
+
+async function notifyTransaction(transactionId: string) {
+  const supabase = createSupabaseServerClient();
+  const { data: transaction, error: transactionError } = await supabase
+    .from("transactions")
+    .select(
+      "id, user_id, name, amount, direction, status, customer_notice, payment_channel"
+    )
+    .eq("id", transactionId)
+    .single();
+  if (transactionError || !transaction) {
+    return {
+      sent: false,
+      reason: `Transaction saved, but notification details could not be loaded${transactionError ? `: ${transactionError.message}` : "."}`,
+    };
+  }
+
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .select("email")
+    .eq("id", transaction.user_id)
+    .single();
+  if (profileError || !profile?.email) {
+    return {
+      sent: false,
+      reason: `Transaction saved, but the customer email address could not be loaded${profileError ? `: ${profileError.message}` : "."}`,
+    };
+  }
+
+  const transferType = transaction.payment_channel.startsWith("simulated_")
+    ? transaction.payment_channel
+        .slice("simulated_".length)
+        .replaceAll("_", " ")
+        .toUpperCase()
+    : undefined;
+  return sendTransactionalEmail({
+    to: profile.email,
+    subject: `First Grade Finance prototype activity: ${transaction.status.replaceAll("_", " ")}`,
+    text: formatTransactionEmail({
+      name: transaction.name,
+      amount: Number(transaction.amount),
+      direction: transaction.direction,
+      status: transaction.status,
+      notice: transaction.customer_notice,
+      reference: transaction.id,
+      transferType,
+    }),
+  });
+}
 
 async function requireAdmin() {
   const user = await getLoggedInUser();
@@ -32,7 +92,7 @@ export async function getAdminDashboardData() {
       supabase
         .from("transactions")
         .select(
-          "id, user_id, account_id, name, amount, direction, category, payment_channel, date"
+          "id, user_id, account_id, name, amount, direction, category, payment_channel, date, status, customer_notice, status_updated_at"
         )
         .order("date", { ascending: false })
         .limit(1000),
@@ -94,8 +154,9 @@ export async function adjustDemoAccountBalance(input: {
 
   if (error) throw new Error(`Balance adjustment failed: ${error.message}`);
   if (!data) throw new Error("The adjustment did not return an audit receipt.");
+  const email = await notifyTransaction(data);
   revalidatePath("/", "layout");
-  return { transactionId: data };
+  return { transactionId: data, email };
 }
 
 export async function recordDemoTransaction(input: {
@@ -104,6 +165,8 @@ export async function recordDemoTransaction(input: {
   amount: number;
   direction: "debit" | "credit";
   category: string;
+  status: TransactionStatus;
+  customerNotice: string;
 }) {
   await requireAdmin();
   if (!input.accountId || !input.name.trim()) {
@@ -122,18 +185,60 @@ export async function recordDemoTransaction(input: {
   if (!["debit", "credit"].includes(input.direction)) {
     throw new Error("Choose a valid transaction direction.");
   }
+  if (!transactionStatuses.includes(input.status)) {
+    throw new Error("Choose a valid transaction status.");
+  }
+  if (input.customerNotice.trim().length > 500) {
+    throw new Error("Customer notice must be 500 characters or fewer.");
+  }
 
   const supabase = createSupabaseServerClient();
-  const { data, error } = await supabase.rpc("admin_record_demo_transaction", {
+  const { data, error } = await supabase.rpc("admin_create_simulated_transaction", {
     p_account_id: input.accountId,
     p_name: input.name.trim(),
     p_amount: input.amount,
     p_direction: input.direction,
     p_category: input.category.trim() || "Other",
+    p_status: input.status,
+    p_customer_notice: input.customerNotice.trim(),
   });
 
   if (error) throw new Error(`Transaction creation failed: ${error.message}`);
   if (!data) throw new Error("The transaction did not return a receipt.");
+  const email = await notifyTransaction(data);
   revalidatePath("/", "layout");
-  return { transactionId: data };
+  return { transactionId: data, email };
+}
+
+export async function updateSimulatedTransaction(input: {
+  transactionId: string;
+  status: TransactionStatus;
+  customerNotice: string;
+}) {
+  await requireAdmin();
+  if (!input.transactionId) {
+    throw new Error("Select a transaction.");
+  }
+  if (!transactionStatuses.includes(input.status)) {
+    throw new Error("Choose a valid transaction status.");
+  }
+  if (input.customerNotice.trim().length > 500) {
+    throw new Error("Customer notice must be 500 characters or fewer.");
+  }
+
+  const supabase = createSupabaseServerClient();
+  const { data, error } = await supabase.rpc(
+    "admin_update_simulated_transaction",
+    {
+      p_transaction_id: input.transactionId,
+      p_status: input.status,
+      p_customer_notice: input.customerNotice.trim(),
+    }
+  );
+
+  if (error) throw new Error(`Transaction update failed: ${error.message}`);
+  if (!data) throw new Error("The transaction update did not return a receipt.");
+  const email = await notifyTransaction(data);
+  revalidatePath("/", "layout");
+  return { transactionId: data, email };
 }

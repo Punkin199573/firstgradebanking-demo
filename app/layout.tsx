@@ -10,8 +10,9 @@ const ibmPlexSerif = IBM_Plex_Serif({
 });
 
 export const metadata: Metadata = {
-  title: "DelanBank",
-  description: "Explore a safe, simulated banking dashboard demo.",
+  title: "First Grade Finance",
+  description:
+    "Explore the First Grade Finance prototype with clearly labeled simulated banking activity.",
   icons: {
     icon: "/icons/logo.svg",
   },
@@ -24,6 +25,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "try{var t=localStorage.getItem('fgf-theme');if(t==='dark'||t==='light'){document.documentElement.dataset.theme=t}else if(window.matchMedia('(prefers-color-scheme: dark)').matches){document.documentElement.dataset.theme='dark'}}catch(e){}",
+          }}
+        />
+      </head>
       <body className={`${inter.variable} ${ibmPlexSerif.variable}`}>
         {children}
       </body>

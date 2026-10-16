@@ -76,7 +76,7 @@ export async function getAccount({ accountId }: getAccountProps) {
   const { data: transactions, error: transactionsError } = await supabase
     .from("transactions")
     .select(
-      "id, name, amount, direction, category, payment_channel, pending, date, account_id"
+      "id, name, amount, direction, category, payment_channel, pending, status, customer_notice, date, account_id"
     )
     .eq("account_id", accountId)
     .order("date", { ascending: false });
@@ -97,6 +97,8 @@ export async function getAccount({ accountId }: getAccountProps) {
       category: transaction.category,
       paymentChannel: transaction.payment_channel,
       pending: transaction.pending,
+      status: transaction.status,
+      customerNotice: transaction.customer_notice,
       date: transaction.date,
       accountId: transaction.account_id,
     })),

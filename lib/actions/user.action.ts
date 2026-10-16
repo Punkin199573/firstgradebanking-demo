@@ -2,6 +2,11 @@
 
 import { revalidatePath } from "next/cache";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import {
+  sendTransactionalEmail,
+  type EmailDeliveryResult,
+} from "@/lib/email";
 
 type SignUpInput = {
   firstName: string;
@@ -44,8 +49,56 @@ export async function signUp({ firstName, lastName, email, password }: SignUpInp
   if (error) throw new Error(error.message);
   if (!data.user) throw new Error("Supabase did not return a new user.");
 
+  let accountEmail: EmailDeliveryResult;
+  if (!process.env.RESEND_API_KEY || !process.env.EMAIL_FROM) {
+    accountEmail = {
+      sent: false,
+      reason: "Email isn't configured. Set RESEND_API_KEY and EMAIL_FROM.",
+    };
+  } else {
+    const accountClient =
+      !data.session && process.env.SUPABASE_SERVICE_ROLE_KEY
+        ? createSupabaseAdminClient()
+        : supabase;
+    const { data: accounts, error: accountsError } = await accountClient
+      .from("bank_accounts")
+      .select("name, account_number, mask")
+      .eq("user_id", data.user.id)
+      .order("created_at", { ascending: true });
+
+    accountEmail = accountsError
+      ? {
+        sent: false,
+        reason: `Account details could not be loaded for email: ${accountsError.message}`,
+      }
+      : !accounts?.length
+        ? {
+          sent: false,
+          reason: "No account details were created, so no account email was sent.",
+        }
+        : await sendTransactionalEmail({
+            to: data.user.email ?? email,
+            subject: "Your First Grade Finance prototype account details",
+            text: [
+              "FIRST GRADE FINANCE · PROTOTYPE ACCOUNT DETAILS",
+              "",
+              `Welcome${firstName.trim() ? `, ${firstName.trim()}` : ""}.`,
+              "",
+              ...accounts.map(
+                (account) =>
+                  `${account.name}: synthetic account number ${account.account_number} (ending ${account.mask}).`
+              ),
+              "",
+              "These are synthetic prototype details, not a real bank account. They cannot receive deposits or send payments. First Grade Finance is not a bank. Do not reply with passwords, verification codes, or sensitive financial information.",
+            ].join("\n"),
+          });
+  }
+
   revalidatePath("/", "layout");
-  return { requiresEmailConfirmation: !data.session };
+  return {
+    requiresEmailConfirmation: !data.session,
+    accountEmail,
+  };
 }
 
 export async function signIn({ email, password }: signInProps) {
@@ -58,8 +111,18 @@ export async function signIn({ email, password }: signInProps) {
   if (error) throw new Error(error.message);
   if (!data.user) throw new Error("Supabase did not return a signed-in user.");
 
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", data.user.id)
+    .single();
+
+  if (profileError) {
+    throw new Error(`Could not load your account role: ${profileError.message}`);
+  }
+
   revalidatePath("/", "layout");
-  return data.user;
+  return { role: profile.role };
 }
 
 export async function getLoggedInUser(): Promise<User | null> {

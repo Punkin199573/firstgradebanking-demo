@@ -18,30 +18,42 @@ import Footer from "./Footer";
 const MobileNav = ({ user }: MobileNavProps) => {
   const pathname = usePathname();
   return (
-    <section className="w-full max-w-[264px]">
+    <section className="w-full max-w-[264px] md:hidden">
       <Sheet>
-        <SheetTrigger>
-          <Image
-            src={"/icons/hamburger.svg"}
-            alt="hamburger"
-            width={30}
-            height={30}
-            className="cursor-pointer"
-          />
+        <SheetTrigger
+          aria-label="Open navigation menu"
+          className="mobile-menu-trigger"
+        >
+          <span>
+            <Image
+              src={"/icons/hamburger.svg"}
+              alt=""
+              width={24}
+              height={24}
+              className="cursor-pointer"
+            />
+          </span>
         </SheetTrigger>
-        <SheetContent className="border-none bg-white" side={"left"}>
+        <SheetContent className="mobile-nav-sheet border-none bg-white" side={"left"}>
+          <SheetHeader className="sr-only">
+            <SheetTitle>First Grade Finance navigation</SheetTitle>
+            <SheetDescription>Navigate to an account area.</SheetDescription>
+          </SheetHeader>
           <Link
             href={`/`}
-            className=" cursor-pointer items-center gap-1 flex px-4"
+            className="flex cursor-pointer items-center gap-2 px-4"
           >
             <Image src="/icons/logo.svg" alt="logo" width={40} height={40} />
-            <h1 className="text-26 font-ibm-plex-serif font-bold text-black-1">
-              Delan
+            <h1 className="text-18 font-semibold leading-tight text-black-1">
+              First Grade
+              <span className="block text-10 font-medium tracking-[0.16em] text-gray-500">
+                FINANCE
+              </span>
             </h1>
           </Link>
           <div className="mobilenav-sheet">
             <SheetClose asChild>
-              <nav className="flex h-full flex-col gap-6 pt-16 text-white">
+            <nav className="flex h-full flex-col gap-2 pt-8 text-white">
                 {[...sidebarLinks,
                   ...(user.role === "admin"
                     ? [{ imgURL: "/icons/monitor.svg", route: "/admin", label: "Admin Console" }]
@@ -55,7 +67,7 @@ const MobileNav = ({ user }: MobileNavProps) => {
                       key={link.label}
                       className={cn("mobilenav-sheet_close", {
                         "bg-bankGradient": isActive,
-                        "hover:bg-purple-500 hover:animate-pulse": !isActive,
+                        "hover:bg-teal-50": !isActive,
                       })}
                     >
                       <Image
