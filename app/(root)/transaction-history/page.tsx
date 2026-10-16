@@ -7,15 +7,29 @@ import { redirect } from "next/navigation";
 import React from "react";
 
 const TransactionHistory = async ({
-  searchParams: { id, page },
+  searchParams: { id },
 }: SearchParamProps) => {
   const loggedIn = await getLoggedInUser();
   if (!loggedIn) redirect("/sign-in");
 
   const accounts = await getAccounts({ userId: loggedIn.$id });
   if (!accounts) return;
-  const appwriteItemId = (id as string) || accounts.data[0]?.appwriteItemId;
-  const account = await getAccount({ appwriteItemId });
+  const selectedAccountId =
+    (Array.isArray(id) ? id[0] : id) || accounts.data[0]?.id;
+  const account = selectedAccountId
+    ? await getAccount({ accountId: selectedAccountId })
+    : null;
+
+  if (!account) {
+    return (
+      <section className="transactions">
+        <HeaderBox
+          title="Transaction History"
+          subtext="Your demo account transactions will appear here."
+        />
+      </section>
+    );
+  }
 
   return (
     <section className="transactions">

@@ -7,14 +7,26 @@ import { getLoggedInUser } from "@/lib/actions/user.action";
 import { redirect } from "next/navigation";
 import React from "react";
 
-const Home = async ({ searchParams: { id, page } }: SearchParamProps) => {
+const Home = async ({ searchParams: { id } }: SearchParamProps) => {
   const loggedIn = await getLoggedInUser();
   if (!loggedIn) redirect("/sign-in");
 
   const accounts = await getAccounts({ userId: loggedIn.$id });
   if (!accounts) return;
-  const appwriteItemId = (id as string) || accounts.data[0]?.appwriteItemId;
-  const account = await getAccount({ appwriteItemId });
+  const selectedAccountId =
+    (Array.isArray(id) ? id[0] : id) || accounts.data[0]?.id;
+  const accountDetails = await Promise.all(
+    accounts.data.map((account) => getAccount({ accountId: account.id }))
+  );
+  const transactionsByAccount = Object.fromEntries(
+    accounts.data.map((account, index) => [
+      account.id,
+      accountDetails[index]?.transactions ?? [],
+    ])
+  );
+  const selectedAccount = accountDetails.find(
+    (account) => account?.data.id === selectedAccountId
+  );
 
   return (
     <section className="home">
@@ -24,7 +36,7 @@ const Home = async ({ searchParams: { id, page } }: SearchParamProps) => {
             type="greeting"
             title="Welcome"
             user={loggedIn?.firstName || "Guest"}
-            subtext="Access and manage your account and transactions"
+            subtext="Explore your simulated accounts and demo transactions."
           />
           <TotalBalanceBox
             accounts={accounts?.data}
@@ -34,15 +46,14 @@ const Home = async ({ searchParams: { id, page } }: SearchParamProps) => {
         </header>
         <RecentTransactions
           accounts={accounts.data}
-          transactions={account?.transactions}
-          appwriteItemId={appwriteItemId}
-          page={page ? +page : 1}
+          transactionsByAccount={transactionsByAccount}
+          selectedAccountId={selectedAccountId ?? ""}
         />
       </div>
       <RightSidebar
         user={loggedIn}
-        transactions={account?.transactions}
-        banks={[accounts.data?.slice(0, 2)]}
+        transactions={selectedAccount?.transactions ?? []}
+        banks={accounts.data.slice(0, 2)}
       />
     </section>
   );

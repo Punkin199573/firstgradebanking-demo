@@ -3,22 +3,10 @@ import { type ClassValue, clsx } from "clsx";
 import qs from "query-string";
 import { twMerge } from "tailwind-merge";
 import { z } from "zod";
-export const authFormSchema = (type: string) =>
+export const authFormSchema = (type: AuthFormProps["type"]) =>
   z.object({
-    //sign-up
     firstName: type === "sign-in" ? z.string().optional() : z.string().min(2),
     lastName: type === "sign-in" ? z.string().optional() : z.string().min(2),
-    address1:
-      type === "sign-in" ? z.string().optional() : z.string().min(2).max(50),
-    city:
-      type === "sign-in" ? z.string().optional() : z.string().min(2).max(50),
-    state:
-      type === "sign-in" ? z.string().optional() : z.string().min(2).max(2),
-    postalCode:
-      type === "sign-in" ? z.string().optional() : z.string().min(2).max(6),
-    dateOfBirth: type === "sign-in" ? z.string().optional() : z.string().min(2),
-    ssn: type === "sign-in" ? z.string().optional() : z.string().min(2),
-    //both
     email: z.string().email(),
     password: z.string().min(8),
   });
@@ -87,7 +75,7 @@ export const formatDateTime = (dateString: Date) => {
 export function formatAmount(amount: number): string {
   const formatter = new Intl.NumberFormat("en-US", {
     style: "currency",
-    currency: "EUR",
+    currency: "USD",
     minimumFractionDigits: 2,
   });
 

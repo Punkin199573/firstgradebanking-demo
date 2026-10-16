@@ -13,14 +13,17 @@ const MyBanks = async () => {
   return (
     <section className="flex">
       <div className="my-banks">
-        <HeaderBox title="My Bank Accounts" subtext="Manage Banking activity" />
+        <HeaderBox
+          title="Demo bank accounts"
+          subtext="Explore simulated accounts and balances. No real bank is connected."
+        />
         <div className="space-y-4">
           <h2 className="header-2">Your Bank Accounts</h2>
           <div className="flex flex-wrap gap-6">
             {accounts &&
               accounts.data.map((account: Account) => (
                 <BankCard
-                  key={accounts.id}
+                  key={account.id}
                   account={account}
                   userName={loggedIn?.firstName}
                 />

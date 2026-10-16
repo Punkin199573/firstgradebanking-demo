@@ -8,32 +8,31 @@ import TransactionsTable from "./TransactionsTable";
 
 const RecentTransactions = ({
   accounts,
-  transactions = [],
-  appwriteItemId,
-  page,
+  transactionsByAccount,
+  selectedAccountId,
 }: RecentTransactionsProps) => {
   return (
     <section className="recent-transactions">
       <header className="flex items-center justify-between">
         <h2 className="recent-transactions-label">Recent Transactions</h2>
         <Link
-          href={`/transaction-history/?id=${appwriteItemId}`}
+          href={`/transaction-history/?id=${selectedAccountId}`}
           className="view-all-btn"
         >
           View All
         </Link>
       </header>
-      <Tabs defaultValue={appwriteItemId} className="w-full">
+      <Tabs defaultValue={selectedAccountId} className="w-full">
         <TabsList className="recent-transactions-tablist">
           {accounts.map((account) => (
             <TabsTrigger
-              key={account.appwriteItemId}
-              value={account.appwriteItemId}
+              key={account.id}
+              value={account.id}
               className=""
             >
               <BankTabItem
                 account={account}
-                appwriteItemId={appwriteItemId}
+                selectedAccountId={selectedAccountId}
                 key={account.id}
               />
             </TabsTrigger>
@@ -41,16 +40,18 @@ const RecentTransactions = ({
         </TabsList>
         {accounts.map((account) => (
           <TabsContent
-            key={account.appwriteItemId}
-            value={account.appwriteItemId}
+            key={account.id}
+            value={account.id}
             className="space-y-4"
           >
             <BankInfo
               account={account}
-              appwriteItemId={appwriteItemId}
+              selectedAccountId={selectedAccountId}
               type="full"
             />
-            <TransactionsTable transactions={transactions} />
+            <TransactionsTable
+              transactions={transactionsByAccount[account.id] ?? []}
+            />
           </TabsContent>
         ))}
       </Tabs>

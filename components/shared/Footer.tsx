@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { signOut } from "@/lib/actions/user.action";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -5,12 +6,23 @@ import React from "react";
 
 const Footer = ({ user, type }: FooterProps) => {
   const router = useRouter();
+  const [error, setError] = useState("");
+
   const handleLogOut = async () => {
-    const loggedOut = await signOut();
-    if (loggedOut) {
+    setError("");
+    try {
+      await signOut();
       router.push("/sign-in");
+      router.refresh();
+    } catch (signOutError) {
+      setError(
+        signOutError instanceof Error
+          ? signOutError.message
+          : "Could not sign out."
+      );
     }
   };
+
   return (
     <footer className="footer">
       <div className={type === "mobile" ? "footer_name-mobile" : "footer_name"}>
@@ -26,9 +38,15 @@ const Footer = ({ user, type }: FooterProps) => {
           </p>
         </h1>
       </div>
-      <div className="footer_image" onClick={handleLogOut}>
-        <Image src="/icons/logout.svg" fill alt="logout" />
-      </div>
+      <button
+        type="button"
+        className="footer_image"
+        onClick={handleLogOut}
+        aria-label="Sign out"
+      >
+        <Image src="/icons/logout.svg" fill alt="" />
+      </button>
+      {error && <p className="text-12 text-red-600" role="alert">{error}</p>}
     </footer>
   );
 };

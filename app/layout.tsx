@@ -11,7 +11,7 @@ const ibmPlexSerif = IBM_Plex_Serif({
 
 export const metadata: Metadata = {
   title: "DelanBank",
-  description: "DelanBank - The future of banking is here",
+  description: "Explore a safe, simulated banking dashboard demo.",
   icons: {
     icon: "/icons/logo.svg",
   },
