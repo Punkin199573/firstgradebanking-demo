@@ -12,6 +12,8 @@ type BankAccountRow = {
   type: string;
   subtype: string;
   institution_id: string;
+  account_number: string;
+  routing_number: string;
 };
 
 function toAccount(row: BankAccountRow): Account {
@@ -25,6 +27,8 @@ function toAccount(row: BankAccountRow): Account {
     name: row.name,
     type: row.type,
     subtype: row.subtype,
+    accountNumber: row.account_number,
+    routingNumber: row.routing_number,
   };
 }
 
@@ -33,7 +37,7 @@ export async function getAccounts({ userId }: getAccountsProps) {
   const { data, error } = await supabase
     .from("bank_accounts")
     .select(
-      "id, name, official_name, current_balance, available_balance, mask, type, subtype, institution_id"
+      "id, name, official_name, current_balance, available_balance, mask, type, subtype, institution_id, account_number, routing_number"
     )
     .eq("user_id", userId)
     .order("created_at", { ascending: true });
@@ -61,7 +65,7 @@ export async function getAccount({ accountId }: getAccountProps) {
   const { data: row, error } = await supabase
     .from("bank_accounts")
     .select(
-      "id, name, official_name, current_balance, available_balance, mask, type, subtype, institution_id"
+      "id, name, official_name, current_balance, available_balance, mask, type, subtype, institution_id, account_number, routing_number"
     )
     .eq("id", accountId)
     .maybeSingle();

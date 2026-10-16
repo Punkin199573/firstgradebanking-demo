@@ -13,7 +13,9 @@ type SignUpInput = {
 const hasSupabaseConfig = () =>
   Boolean(
     process.env.NEXT_PUBLIC_SUPABASE_URL &&
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+      (process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+        process.env.SUPABASE_ANON_KEY)
   );
 
 export async function signUp({ firstName, lastName, email, password }: SignUpInput) {
@@ -74,7 +76,7 @@ export async function getLoggedInUser(): Promise<User | null> {
 
   const { data: profile, error: profileError } = await supabase
     .from("profiles")
-    .select("id, email, first_name, last_name")
+    .select("id, email, first_name, last_name, role")
     .eq("id", data.user.id)
     .single();
 
@@ -90,6 +92,7 @@ export async function getLoggedInUser(): Promise<User | null> {
     firstName: profile.first_name,
     lastName: profile.last_name,
     name: `${profile.first_name} ${profile.last_name}`.trim(),
+    role: profile.role,
   };
 }
 

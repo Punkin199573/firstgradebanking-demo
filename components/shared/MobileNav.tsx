@@ -42,7 +42,11 @@ const MobileNav = ({ user }: MobileNavProps) => {
           <div className="mobilenav-sheet">
             <SheetClose asChild>
               <nav className="flex h-full flex-col gap-6 pt-16 text-white">
-                {sidebarLinks.map((link) => {
+                {[...sidebarLinks,
+                  ...(user.role === "admin"
+                    ? [{ imgURL: "/icons/monitor.svg", route: "/admin", label: "Admin Console" }]
+                    : []),
+                ].map((link) => {
                   const isActive =
                     pathname === link.route || pathname.startsWith(link.route);
                   return (

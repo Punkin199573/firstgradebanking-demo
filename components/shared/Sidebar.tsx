@@ -26,7 +26,11 @@ const Sidebar = ({ user }: SiderbarProps) => {
           />
           <h1 className="sidebar-logo">Delan</h1>
         </Link>
-        {sidebarLinks.map((link) => {
+        {[...sidebarLinks,
+          ...(user.role === "admin"
+            ? [{ imgURL: "/icons/monitor.svg", route: "/admin", label: "Admin Console" }]
+            : []),
+        ].map((link) => {
           const isActive = pathname === link.route;
           return (
             <Link

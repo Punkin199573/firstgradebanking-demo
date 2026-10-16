@@ -11,6 +11,7 @@ declare type User = {
   name: string;
   firstName: string;
   lastName: string;
+  role: "user" | "admin";
 };
 
 declare type Account = {
@@ -23,6 +24,8 @@ declare type Account = {
   name: string;
   type: string;
   subtype: string;
+  accountNumber: string;
+  routingNumber: string;
 };
 
 declare type Transaction = {
