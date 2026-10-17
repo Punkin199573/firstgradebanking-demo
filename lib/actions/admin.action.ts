@@ -51,7 +51,7 @@ async function notifyTransaction(transactionId: string) {
     : undefined;
   return sendTransactionalEmail({
     to: profile.email,
-    subject: `Meridian Finance account activity: ${transaction.status.replaceAll("_", " ")}`,
+    subject: `First Grade Finance account activity: ${transaction.status.replaceAll("_", " ")}`,
     text: formatTransactionEmail({
       name: transaction.name,
       amount: Number(transaction.amount),

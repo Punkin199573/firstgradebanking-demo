@@ -72,7 +72,7 @@ export function formatTransactionEmail(input: {
     `Reference: ${input.reference}`,
     input.notice ? `Message: ${input.notice}` : "",
     "",
-    "This message confirms activity on your Meridian Finance account.",
+    "This message confirms activity on your First Grade Finance account.",
     "Do not reply with passwords, verification codes, or sensitive financial details.",
   ].filter(Boolean);
   return details.join("\n");

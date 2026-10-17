@@ -14,7 +14,7 @@ export default async function AdminPage() {
       <section className="flex h-full w-full items-center justify-center bg-gray-25 p-5 sm:p-8">
         <div className="w-full max-w-2xl rounded-2xl border border-gray-200 bg-white p-6 shadow-chart sm:p-8">
           <p className="text-12 font-semibold uppercase tracking-[0.16em] text-blue-700">
-            Meridian Finance · Operations
+            First Grade Finance · Operations
           </p>
           <h1 className="mt-2 text-24 font-semibold text-gray-900">
             Admin access isn&apos;t enabled for this account

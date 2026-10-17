@@ -9,7 +9,7 @@ export default function AuthLayout({
   return (
     <main className="auth-layout">
       <div className="auth-content">{children}</div>
-      <aside className="auth-asset" aria-label="Meridian Finance overview">
+      <aside className="auth-asset" aria-label="First Grade Finance overview">
         <div className="auth-showcase">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
@@ -17,7 +17,7 @@ export default function AuthLayout({
                 <CircleDollarSign size={24} />
               </span>
               <div>
-                <p className="text-16 font-semibold text-white">Meridian</p>
+                <p className="text-16 font-semibold text-white">First Grade</p>
                 <p className="text-10 font-semibold tracking-[0.2em] text-teal-100">
                   FINANCE
                 </p>

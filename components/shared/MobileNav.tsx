@@ -36,16 +36,16 @@ const MobileNav = ({ user }: MobileNavProps) => {
         </SheetTrigger>
         <SheetContent className="mobile-nav-sheet border-none bg-white" side="left">
           <SheetHeader className="sr-only">
-            <SheetTitle>Meridian Finance navigation</SheetTitle>
+            <SheetTitle>First Grade Finance navigation</SheetTitle>
             <SheetDescription>Navigate to an account area.</SheetDescription>
           </SheetHeader>
           <Link
             href={`/`}
             className="flex cursor-pointer items-center gap-2 px-4"
           >
-            <Image src="/icons/logo.svg" alt="Meridian Finance home" width={40} height={40} />
+            <Image src="/icons/logo.svg" alt="First Grade Finance home" width={40} height={40} />
             <h1 className="text-18 font-semibold leading-tight text-black-1">
-              Meridian
+              First Grade
               <span className="block text-10 font-medium tracking-[0.16em] text-gray-500">
                 FINANCE
               </span>

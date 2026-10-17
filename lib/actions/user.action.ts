@@ -78,7 +78,7 @@ export async function signUp({ firstName, lastName, email, password }: SignUpInp
         }
         : await sendTransactionalEmail({
             to: data.user.email ?? email,
-            subject: "Your Meridian Finance account details",
+            subject: "Your First Grade Finance account details",
             text: [
               "FIRST GRADE FINANCE · PROTOTYPE ACCOUNT DETAILS",
               "",

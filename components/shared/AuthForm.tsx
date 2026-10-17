@@ -97,7 +97,7 @@ const AuthForm = ({ type }: AuthFormProps) => {
           <Link href="/" className="flex cursor-pointer items-center gap-2">
             <Image src="/icons/logo.svg" alt="logo" width={40} height={40} />
             <h1 className="text-18 font-semibold leading-tight text-black-1">
-              Meridian
+              First Grade
               <span className="block text-10 font-medium tracking-[0.16em] text-gray-500">
                 FINANCE
               </span>
@@ -112,7 +112,7 @@ const AuthForm = ({ type }: AuthFormProps) => {
           <p className="text-16 font-normal text-gray-600">
             {type === "sign-in"
               ? "Welcome back. Enter your credentials to continue."
-              : "Create your Meridian Finance account."}
+              : "Create your First Grade Finance account."}
           </p>
           <p className="mt-2 rounded-xl border border-teal-100 bg-teal-50 px-3 py-2 text-12 text-teal-900">
           </p>

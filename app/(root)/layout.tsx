@@ -25,7 +25,7 @@ export default async function Layout({
           <div className="flex min-w-0 items-center gap-3">
             <Image src="/icons/logo.svg" alt="" width={36} height={36} />
             <span className="truncate text-14 font-semibold text-gray-900 sm:text-16">
-              Meridian Finance
+              First Grade Finance
             </span>
             <span className="hidden rounded-full border border-teal-200 bg-teal-50 px-2.5 py-1 text-10 font-semibold uppercase tracking-wide text-teal-800 sm:inline-flex">
               Secure account management
