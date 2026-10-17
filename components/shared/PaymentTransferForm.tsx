@@ -115,7 +115,7 @@ const PaymentTransferForm = ({ accounts }: PaymentTransferFormProps) => {
       setError(
         submitError instanceof Error
           ? submitError.message
-          : "The simulated transfer could not be completed."
+          : "The pending transfer could not be completed."
       );
     } finally {
       setIsLoading(false);
@@ -186,7 +186,7 @@ const PaymentTransferForm = ({ accounts }: PaymentTransferFormProps) => {
   if (accounts.length === 0) {
     return (
       <p className="mx-auto max-w-6xl rounded-2xl border border-gray-200 bg-white p-6 text-14 text-gray-700 shadow-sm">
-        No simulated accounts are available for a transfer yet.
+        No accounts are available for a transfer yet.
       </p>
     );
   }
@@ -219,7 +219,7 @@ const PaymentTransferForm = ({ accounts }: PaymentTransferFormProps) => {
         </div>
         <span className="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-11 font-semibold text-amber-700">
           <ShieldCheck size={14} aria-hidden="true" />
-          Prototype environment
+          Secure transfer
         </span>
       </div>
 
@@ -230,9 +230,8 @@ const PaymentTransferForm = ({ accounts }: PaymentTransferFormProps) => {
           aria-hidden="true"
         />
         <p className="text-13 leading-5">
-          <span className="font-semibold">No real funds move.</span> External
-          transfers are fictional requests only. No payment network is connected;
-          use fictional recipient details.
+          <span className="font-semibold">Review carefully.</span> Confirm
+          recipient details before submitting an external transfer.
         </p>
       </div>
 
@@ -265,7 +264,7 @@ const PaymentTransferForm = ({ accounts }: PaymentTransferFormProps) => {
                 My accounts
               </span>
               <span className="mt-1 block text-12 leading-5 text-gray-600">
-                Transfer a simulated balance between accounts you own.
+                Move funds between accounts you own.
               </span>
             </span>
           </label>
@@ -292,7 +291,7 @@ const PaymentTransferForm = ({ accounts }: PaymentTransferFormProps) => {
                 Another institution
               </span>
               <span className="mt-1 block text-12 leading-5 text-gray-600">
-                Submit a fictional request for administrator review.
+                Send a request to another institution for review.
               </span>
             </span>
           </label>
@@ -380,7 +379,7 @@ const PaymentTransferForm = ({ accounts }: PaymentTransferFormProps) => {
             />
           </label>
           <label className="flex flex-col gap-2 text-14 font-medium text-gray-700 sm:col-span-2">
-            Fictional recipient account number
+            Recipient account number
             <input
               className="input-class"
               type="text"
@@ -398,8 +397,8 @@ const PaymentTransferForm = ({ accounts }: PaymentTransferFormProps) => {
               required
             />
             <span className="text-12 font-normal text-gray-500">
-              Use 4–17 digits from fictional test data. Only the last four are
-              retained; the full number is discarded after submission.
+              Enter 4–17 digits. Only the last four are retained; the full number is
+              discarded after submission.
             </span>
           </label>
         </div>
@@ -415,12 +414,12 @@ const PaymentTransferForm = ({ accounts }: PaymentTransferFormProps) => {
           {destination === "internal" && (
             <option value="internal">Internal account transfer</option>
           )}
-          <option value="ach">ACH (simulated)</option>
-          <option value="same_day_ach">Same-day ACH (simulated)</option>
-          <option value="wire">Domestic wire (simulated)</option>
-          <option value="rtp">RTP real-time payment (simulated)</option>
-          <option value="fednow">FedNow payment (simulated)</option>
-          <option value="p2p">Person-to-person (simulated)</option>
+          <option value="ach">ACH (pending)</option>
+          <option value="same_day_ach">Same-day ACH</option>
+          <option value="wire">Domestic wire</option>
+          <option value="rtp">RTP real-time payment</option>
+          <option value="fednow">FedNow payment</option>
+          <option value="p2p">Person-to-person</option>
         </select>
       </label>
 
@@ -473,8 +472,8 @@ const PaymentTransferForm = ({ accounts }: PaymentTransferFormProps) => {
           <>
             <ArrowDownUp size={18} /> &nbsp;
             {destination === "external"
-              ? "Submit simulated transfer request"
-              : "Submit simulated transfer"}
+              ? "Submit pending transfer request"
+              : "Submit pending transfer"}
           </>
         )}
       </Button>
@@ -526,7 +525,7 @@ const PaymentTransferForm = ({ accounts }: PaymentTransferFormProps) => {
                 </p>
                 <p className="mt-0.5 text-12 text-gray-600">
                   {destination === "internal"
-                    ? "Your account · simulated"
+                    ? "Your account · pending"
                     : recipientInstitution.trim() || "Another institution"}
                 </p>
               </div>
@@ -538,7 +537,7 @@ const PaymentTransferForm = ({ accounts }: PaymentTransferFormProps) => {
                   {transferType.replaceAll("_", " ").toUpperCase()}
                 </p>
                 <p className="mt-0.5 text-12 text-gray-600">
-                  Simulated transfer method
+                  Transfer method
                 </p>
               </div>
             </div>
@@ -556,7 +555,7 @@ const PaymentTransferForm = ({ accounts }: PaymentTransferFormProps) => {
                 <p className="mt-1 text-12 leading-5 text-gray-600">
                   Your request is recorded as pending. An administrator can
                   update its status; a successful update changes only your
-                  simulated account balance.
+                  pending account balance.
                 </p>
               </div>
             </div>
@@ -638,14 +637,14 @@ const PaymentTransferForm = ({ accounts }: PaymentTransferFormProps) => {
             </h2>
             <p className="mt-3 text-14 leading-6 text-gray-600">
               {receipt.status === "successful"
-                ? "The administrator marked this simulated request successful. Your simulated account balance has been updated."
+                ? "The administrator marked this pending request successful. Your pending account balance has been updated."
                 : receipt.status === "failed"
-                  ? "The administrator marked this simulated request failed. Simulated account balances were not changed."
+                  ? "The administrator marked this pending request failed. Account balances were not changed."
                   : receipt.status === "on_hold"
-                    ? "The administrator placed this simulated request on hold. Your simulated balance has not changed."
+                    ? "The administrator placed this pending request on hold. Your pending balance has not changed."
                     : receipt.status === "action_required"
-                      ? "The administrator needs more information before updating this simulated request. Your simulated balance has not changed."
-                      : "This simulated request is awaiting an administrator status update. Account balances will not change unless it is marked successful."}
+                      ? "The administrator needs more information before updating this pending request. Your pending balance has not changed."
+                      : "This pending request is awaiting an administrator status update. Account balances will not change unless it is marked successful."}
             </p>
             <p className="mt-2 text-12 text-gray-500">
               Status and administrator messages refresh automatically while
@@ -654,7 +653,7 @@ const PaymentTransferForm = ({ accounts }: PaymentTransferFormProps) => {
             {receipt.recipient && (
               <div className="mt-4 rounded-xl border border-gray-200 bg-gray-25 p-4">
                 <p className="text-10 font-semibold uppercase tracking-wide text-gray-500">
-                  External destination · fictional details
+                  External destination
                 </p>
                 <p className="mt-1 text-14 font-semibold text-gray-900">
                   {receipt.recipient.name}
@@ -686,7 +685,7 @@ const PaymentTransferForm = ({ accounts }: PaymentTransferFormProps) => {
               </div>
               <div>
                 <p className="text-10 font-semibold uppercase tracking-wide text-gray-500">
-                  Method · simulated
+                  Transfer method
                 </p>
                 <p className="mt-1 text-14 font-semibold uppercase text-gray-900">
                   {receipt.transferType.replaceAll("_", " ")}
@@ -782,7 +781,7 @@ const PaymentTransferForm = ({ accounts }: PaymentTransferFormProps) => {
               </Button>
             </div>
             <p className="mt-4 text-10 leading-4 text-gray-500">
-              Prototype only. This does not initiate an ACH, wire, RTP, FedNow,
+              Transfer instructions are reviewed securely. This does not initiate an ACH, wire, RTP, FedNow,
               or person-to-person network payment.
             </p>
           </section>

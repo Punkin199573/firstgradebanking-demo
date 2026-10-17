@@ -56,7 +56,7 @@ const TransactionsTable = ({ transactions }: TransactionTableProps) => {
 
             const isDebit = t.type === "debit";
             const channel = t.paymentChannel.startsWith("simulated_")
-              ? `${t.paymentChannel.slice("simulated_".length).replaceAll("_", " ").toUpperCase()} · Simulated`
+              ? `${t.paymentChannel.slice("simulated_".length).replaceAll("_", " ").toUpperCase()}`
               : t.paymentChannel;
 
             return (

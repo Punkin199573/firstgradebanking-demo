@@ -53,7 +53,7 @@ const AuthForm = ({ type }: AuthFormProps) => {
           setMessage(
             `Account created. Check your email to confirm your address. ${
               result.accountEmail.sent
-                ? "Your synthetic account details were emailed."
+                ? "Your account account details were emailed."
                 : `The account-details email was not sent: ${result.accountEmail.reason}`
             }`
           );
@@ -63,7 +63,7 @@ const AuthForm = ({ type }: AuthFormProps) => {
         if (!result.accountEmail.sent) {
           setAccountCreatedWithSession(true);
           setMessage(
-            `Account created, but the synthetic account-details email was not sent: ${result.accountEmail.reason}`
+            `Account created, but the account account-details email was not sent: ${result.accountEmail.reason}`
           );
           return;
         }
@@ -112,10 +112,9 @@ const AuthForm = ({ type }: AuthFormProps) => {
           <p className="text-16 font-normal text-gray-600">
             {type === "sign-in"
               ? "Welcome back. Enter your credentials to continue."
-              : "Sign up to explore the First Grade Finance prototype."}
+              : "Create your First Grade Finance account."}
           </p>
           <p className="mt-2 rounded-xl border border-teal-100 bg-teal-50 px-3 py-2 text-12 text-teal-900">
-            Prototype · simulated balances only · not a bank or payment service
           </p>
         </div>
       </header>
@@ -159,9 +158,7 @@ const AuthForm = ({ type }: AuthFormProps) => {
 
           {type === "sign-up" && (
             <p className="text-12 text-gray-600">
-              Prototype environment. Balances and transfers are simulated;
-              this service is not a bank and does not move real money. Do not
-              enter sensitive personal or financial information.
+              Keep your account information secure and never share your password.
             </p>
           )}
           {error && (

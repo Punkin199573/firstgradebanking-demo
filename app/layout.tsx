@@ -12,7 +12,7 @@ const ibmPlexSerif = IBM_Plex_Serif({
 export const metadata: Metadata = {
   title: "First Grade Finance",
   description:
-    "Explore the First Grade Finance prototype with clearly labeled simulated banking activity.",
+    "Manage your accounts and transfers with First Grade Finance.",
   icons: {
     icon: "/icons/logo.svg",
   },

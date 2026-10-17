@@ -114,8 +114,8 @@ export default function AdminDashboard({ data }: { data: AdminData }) {
         setNotice(
           `${
             newTransactionStatus === "successful"
-              ? "Simulated transaction recorded and account balance updated."
-              : "Simulated transaction recorded. No balance change was made."
+              ? "Transaction recorded and account balance updated."
+              : "Transaction recorded. No balance change was made."
           } ${
             result.email.sent
               ? "Customer notification email sent."
@@ -162,12 +162,12 @@ export default function AdminDashboard({ data }: { data: AdminData }) {
             Admin command center
           </h1>
           <p className="mt-3 max-w-2xl text-14 leading-6 text-slate-300">
-            Manage simulated accounts, transaction lifecycles, and customer
+            Manage account accounts, transaction lifecycles, and customer
             notices. All changes are audited; no real funds move. Customer email
             alerts require the configured transactional email provider.
           </p>
           <span className="mt-5 inline-flex items-center gap-2 rounded-full border border-amber-300/30 bg-amber-200/10 px-3 py-1.5 text-12 font-medium text-amber-100">
-            Prototype environment · simulated data
+            Account operations
           </span>
         </div>
         <div aria-hidden="true" className="admin-hero-orbit" />
@@ -176,7 +176,7 @@ export default function AdminDashboard({ data }: { data: AdminData }) {
       <div className="grid gap-4 sm:grid-cols-3">
         <Metric label="Registered profiles" value={String(data.users.length)} />
         <Metric
-          label="Simulated accounts"
+          label="Accounts"
           value={String(data.accounts.length)}
         />
         <Metric
@@ -263,7 +263,7 @@ export default function AdminDashboard({ data }: { data: AdminData }) {
                 )}
               </div>
               <span className="rounded-full bg-amber-50 px-3 py-1 text-12 font-medium text-amber-800">
-                Simulated profile
+                Account profile
               </span>
             </div>
 
@@ -286,7 +286,7 @@ export default function AdminDashboard({ data }: { data: AdminData }) {
             {account ? (
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
                 <Detail label="Account number" value={account.account_number} />
-                <Detail label="Synthetic routing number" value={account.routing_number} />
+                <Detail label="Routing number" value={account.routing_number} />
                 <Detail
                   label="Available balance"
                   value={formatAmount(Number(account.available_balance))}
@@ -298,7 +298,7 @@ export default function AdminDashboard({ data }: { data: AdminData }) {
               </div>
             ) : (
               <p className="mt-5 rounded-lg bg-gray-25 p-4 text-14 text-gray-600">
-                This user has no simulated account yet.
+                This user has no account yet.
               </p>
             )}
             <p className="mt-4 text-12 text-gray-500">
@@ -314,7 +314,7 @@ export default function AdminDashboard({ data }: { data: AdminData }) {
                 className="rounded-2xl border border-gray-200 bg-white p-5 shadow-chart"
               >
                 <h2 className="text-16 font-semibold text-gray-900">
-                  Adjust simulated balance
+                  Adjust account balance
                 </h2>
                 <p className="mt-1 text-12 text-gray-600">
                   The change is appended to the user&apos;s ledger and admin
@@ -353,7 +353,7 @@ export default function AdminDashboard({ data }: { data: AdminData }) {
                 className="rounded-2xl border border-gray-200 bg-white p-5 shadow-chart"
               >
                 <h2 className="text-16 font-semibold text-gray-900">
-                  Record simulated transaction
+                  Record transaction
                 </h2>
                 <p className="mt-1 text-12 text-gray-600">
                   Only successful entries update balances; overdrafts are blocked.
@@ -436,7 +436,7 @@ export default function AdminDashboard({ data }: { data: AdminData }) {
                   />
                 </label>
                 <p className="mt-2 text-12 leading-5 text-gray-500">
-                  Only a successful simulated transaction changes the displayed
+                  Only a successful account transaction changes the displayed
                   balance. Notices appear in the customer transaction history
                   and are emailed when transactional email is configured.
                 </p>
@@ -454,9 +454,9 @@ export default function AdminDashboard({ data }: { data: AdminData }) {
                 Transaction status &amp; customer notice
               </h2>
               <p className="mt-1 max-w-3xl text-12 leading-5 text-gray-600">
-                Select any recorded simulated transaction to update its status
+                Select any recorded account transaction to update its status
                 or customer notice. Status corrections are audited and reconcile
-                simulated balances where applicable.
+                account balances where applicable.
               </p>
             </div>
             {transactions.length > 0 ? (
@@ -480,8 +480,8 @@ export default function AdminDashboard({ data }: { data: AdminData }) {
                             : "Credit"}{" "}
                           · {formatAmount(Number(selectedTransaction.amount))}
                           {selectedTransaction.payment_channel.startsWith(
-                            "simulated_"
-                          ) && " · Simulated transfer"}
+                            "account_"
+                          ) && " · Transfer"}
                         </p>
                       </div>
                       <StatusBadge status={selectedTransaction.status} />
@@ -489,7 +489,7 @@ export default function AdminDashboard({ data }: { data: AdminData }) {
                     {selectedTransaction.recipient && (
                       <div className="mt-4 rounded-xl border border-gray-200 bg-white p-3">
                         <p className="text-10 font-semibold uppercase tracking-wide text-gray-500">
-                          External destination · fictional details
+                          External destination
                         </p>
                         <p className="mt-1 text-14 font-semibold text-gray-900">
                           {selectedTransaction.recipient.name}
@@ -563,8 +563,8 @@ export default function AdminDashboard({ data }: { data: AdminData }) {
                 </label>
                 <p className="text-12 leading-5 text-gray-500 lg:col-span-2">
                   Changing a successful status reverses or reapplies its
-                  simulated balance effect. A reversal is blocked if the
-                  account no longer has sufficient simulated funds. Every
+                  account balance effect. A reversal is blocked if the
+                  account no longer has sufficient account funds. Every
                   change is recorded in the audit trail.
                 </p>
                 <div className="lg:col-span-2">
@@ -626,7 +626,7 @@ export default function AdminDashboard({ data }: { data: AdminData }) {
                       <td className="p-3 text-gray-600">
                         {data.accounts.find(
                           (item) => item.id === transaction.account_id
-                        )?.name ?? "Simulated account"}
+                        )?.name ?? "Account"}
                       </td>
                       <td className="p-3 capitalize text-gray-600">
                         {transaction.direction}

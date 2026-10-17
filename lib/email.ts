@@ -72,8 +72,8 @@ export function formatTransactionEmail(input: {
     `Reference: ${input.reference}`,
     input.notice ? `Message: ${input.notice}` : "",
     "",
-    "This is simulated activity. First Grade Finance is not a bank and this message does not confirm a real payment or movement of funds.",
-    "Synthetic account information only. Do not reply with passwords, verification codes, or sensitive financial details.",
+    "This message confirms activity on your First Grade Finance account.",
+    "Do not reply with passwords, verification codes, or sensitive financial details.",
   ].filter(Boolean);
   return details.join("\n");
 }

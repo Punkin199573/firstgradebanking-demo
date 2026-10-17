@@ -52,7 +52,7 @@ export async function simulateDemoTransfer({
       "p2p",
     ].includes(transferType)
   ) {
-    throw new Error("Choose a supported simulated transfer type.");
+    throw new Error("Choose a supported transfer type.");
   }
 
   const supabase = createSupabaseServerClient();
@@ -73,7 +73,7 @@ export async function simulateDemoTransfer({
       throw new Error("Enter a recipient name and institution (2–80 characters).");
     }
     if (!/^\d{4,17}$/.test(recipient.accountNumber)) {
-      throw new Error("Use a fictional account number with 4 to 17 digits.");
+      throw new Error("Use an account number with 4 to 17 digits.");
     }
   }
 
@@ -95,8 +95,8 @@ export async function simulateDemoTransfer({
         p_transfer_type: transferType,
       });
 
-  if (error) throw new Error(`Simulated transfer failed: ${error.message}`);
-  if (!data) throw new Error("The simulated transfer did not return a receipt.");
+  if (error) throw new Error(`Transfer failed: ${error.message}`);
+  if (!data) throw new Error("The transfer did not return a receipt.");
 
   const email = await sendTransactionalEmail({
     to: authData.user.email,
@@ -107,7 +107,7 @@ export async function simulateDemoTransfer({
       direction: "debit",
       status: "pending",
       notice:
-        "Your simulated transfer request is awaiting an administrator status update. No real payment was initiated.",
+        "Your transfer request is awaiting an administrator status update.",
       reference: data,
       transferType: transferType.toUpperCase(),
     }),

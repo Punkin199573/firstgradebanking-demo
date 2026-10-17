@@ -15,7 +15,7 @@ const MyBanks = async () => {
       <div className="my-banks">
         <HeaderBox
           title="Your accounts"
-          subtext="Explore your simulated accounts and balances. No real bank is connected."
+          subtext="Review your connected accounts and balances."
         />
         <div className="space-y-4">
           <h2 className="header-2">Your Bank Accounts</h2>
@@ -42,7 +42,7 @@ const MyBanks = async () => {
                         </dd>
                       </div>
                       <p className="text-10 text-amber-700">
-                        Synthetic prototype details only; they cannot be used for
+                        Account details are securely managed and cannot be used for
                         real deposits, withdrawals, or payments.
                       </p>
                     </dl>

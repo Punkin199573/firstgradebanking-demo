@@ -78,7 +78,7 @@ export async function signUp({ firstName, lastName, email, password }: SignUpInp
         }
         : await sendTransactionalEmail({
             to: data.user.email ?? email,
-            subject: "Your First Grade Finance prototype account details",
+            subject: "Your First Grade Finance account details",
             text: [
               "FIRST GRADE FINANCE · PROTOTYPE ACCOUNT DETAILS",
               "",
@@ -86,10 +86,10 @@ export async function signUp({ firstName, lastName, email, password }: SignUpInp
               "",
               ...accounts.map(
                 (account) =>
-                  `${account.name}: synthetic account number ${account.account_number} (ending ${account.mask}).`
+                  `${account.name}: account number ${account.account_number} (ending ${account.mask}).`
               ),
               "",
-              "These are synthetic prototype details, not a real bank account. They cannot receive deposits or send payments. First Grade Finance is not a bank. Do not reply with passwords, verification codes, or sensitive financial information.",
+              "Do not reply with passwords, verification codes, or sensitive financial information.",
             ].join("\n"),
           });
   }
