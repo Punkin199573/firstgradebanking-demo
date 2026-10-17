@@ -39,8 +39,8 @@ const Sidebar = ({ user }: SiderbarProps) => {
               key={link.label}
               aria-current={isActive ? "page" : undefined}
               className={cn("sidebar-link", {
-                "bg-bankGradient": isActive,
-                "hover:bg-teal-50": !isActive,
+                "bg-[#153d3b] shadow-[0_10px_24px_-16px_rgba(21,61,59,0.7)]": isActive,
+                "hover:bg-[#edf6f3]": !isActive,
               })}
             >
               <div className="relative size-6">

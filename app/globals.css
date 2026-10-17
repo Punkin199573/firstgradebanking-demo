@@ -2,8 +2,20 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  :root {
+    --surface: #f7f8f6;
+    --surface-raised: #ffffff;
+    --ink: #152a2d;
+    --ink-muted: #667678;
+    --line: #e2e9e6;
+    --accent: #0f766e;
+    --accent-soft: #e7f4f0;
+  }
+}
+
 html {
-  background: #f3f7f6;
+  background: var(--surface);
 }
 
 .sheet-content {
@@ -11,8 +23,8 @@ html {
 }
 
 body {
-  color: #102e3a;
-  background: #f3f7f6;
+  color: var(--ink);
+  background: var(--surface);
 }
 
 body {
@@ -75,7 +87,7 @@ textarea {
 
 @layer utilities {
   .input-class {
-    @apply w-full rounded-xl border border-gray-300 bg-white px-3 py-2.5 text-14 text-gray-900 transition placeholder:text-14 placeholder:text-gray-500 focus:border-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-700/20 disabled:cursor-not-allowed disabled:opacity-60;
+    @apply w-full rounded-xl border border-gray-300 bg-white px-3 py-3 text-16 text-gray-900 shadow-[0_1px_2px_rgba(16,42,40,0.04)] transition placeholder:text-16 placeholder:text-gray-500 focus:border-teal-700 focus:outline-none focus:ring-4 focus:ring-teal-700/10 disabled:cursor-not-allowed disabled:opacity-60;
   }
 
   .sheet-content button {
@@ -141,14 +153,20 @@ textarea {
 
   .home-content {
     @apply flex min-w-0 w-full flex-1 flex-col gap-8 px-4 py-6 sm:px-8 sm:py-8 lg:py-10;
+    background:
+      radial-gradient(circle at 100% 0%, rgba(216, 239, 231, 0.42), transparent 28rem),
+      var(--surface);
   }
 
   .home-header {
-    @apply flex flex-col justify-between gap-8;
+    @apply flex flex-col justify-between gap-6;
   }
 
   .total-balance {
-    @apply flex w-full items-center gap-4 rounded-xl border border-gray-200 p-4 shadow-chart sm:gap-6 sm:p-6;
+    @apply flex w-full items-center gap-4 rounded-2xl border p-4 sm:gap-6 sm:p-6;
+    border-color: var(--line);
+    background: var(--surface-raised);
+    box-shadow: 0 18px 45px -34px rgba(18, 51, 48, 0.45);
   }
 
   .total-balance-chart {
@@ -416,7 +434,10 @@ textarea {
 
   /* Root Layout */
   .root-layout {
-    @apply sticky top-0 z-30 flex h-16 shrink-0 items-center justify-between border-b border-gray-200 bg-white px-4 sm:px-6;
+    @apply sticky top-0 z-30 flex h-[4.5rem] shrink-0 items-center justify-between border-b px-4 sm:px-6;
+    border-color: var(--line);
+    background: rgba(255, 255, 255, 0.88);
+    backdrop-filter: blur(18px);
   }
 
   /* Bank Info */
@@ -455,7 +476,9 @@ textarea {
 
   /* Sidebar */
   .sidebar {
-    @apply sticky left-0 top-0 hidden h-dvh w-[224px] shrink-0 flex-col justify-between border-r border-gray-200 bg-white pt-6 text-white md:flex md:p-3 xl:w-[280px] xl:p-5 2xl:w-[320px];
+    @apply sticky left-0 top-0 hidden h-dvh w-[224px] shrink-0 flex-col justify-between border-r bg-white pt-6 text-white md:flex md:p-4 xl:w-[268px] xl:p-5;
+    border-color: var(--line);
+    background: #fbfcfa;
   }
 
   .sidebar-logo {
@@ -529,9 +552,10 @@ textarea {
     width: 100%;
     max-width: 100%;
     overflow-x: auto;
-    border: 1px solid #e5eceb;
-    border-radius: 1rem;
-    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 1.25rem;
+    background: var(--surface-raised);
+    box-shadow: 0 14px 35px -32px rgba(18, 51, 48, 0.6);
     -webkit-overflow-scrolling: touch;
   }
 

@@ -3,10 +3,13 @@ import React from "react";
 const HeaderBox = ({ type, title, user, subtext }: HeaderBoxProps) => {
   return (
     <div className={`header-box `}>
-      <h1 className="header-box-title">
+      <p className="text-12 font-semibold uppercase tracking-[0.16em] text-teal-700">
+        Personal overview
+      </p>
+      <h1 className="header-box-title mt-2">
         {title}
         {type === "greeting" && (
-          <span className="text-bankGradient">&nbsp;{user} </span>
+          <span className="text-bankGradient"> {user}</span>
         )}
       </h1>
 
