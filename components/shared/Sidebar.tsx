@@ -19,13 +19,13 @@ const Sidebar = ({ user }: SiderbarProps) => {
         >
           <Image
             src="/icons/logo.svg"
-            alt="logo"
+            alt="Meridian Finance home"
             width={40}
             height={40}
             className="size-[60px] max-xl:size-30"
           />
           <h1 className="sidebar-logo">
-            First Grade
+            Meridian
             <span className="block text-12 font-medium tracking-[0.08em] text-gray-500">
               FINANCE
             </span>

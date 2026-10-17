@@ -10,9 +10,9 @@ const ibmPlexSerif = IBM_Plex_Serif({
 });
 
 export const metadata: Metadata = {
-  title: "First Grade Finance",
+  title: "Meridian Finance",
   description:
-    "Manage your accounts and transfers with First Grade Finance.",
+    "Manage your accounts and transfers with Meridian Finance.",
   icons: {
     icon: "/icons/logo.svg",
   },

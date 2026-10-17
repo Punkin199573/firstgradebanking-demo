@@ -100,7 +100,7 @@ export async function simulateDemoTransfer({
 
   const email = await sendTransactionalEmail({
     to: authData.user.email,
-    subject: "Your First Grade Finance transfer request is pending",
+    subject: "Your Meridian Finance transfer request is pending",
     text: formatTransactionEmail({
       name: memo.trim() || "Transfer request",
       amount,

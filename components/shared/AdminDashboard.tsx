@@ -156,7 +156,7 @@ export default function AdminDashboard({ data }: { data: AdminData }) {
       <header className="admin-hero relative overflow-hidden rounded-3xl p-6 text-white sm:p-9">
         <div className="relative z-10 max-w-3xl">
           <p className="text-12 font-semibold uppercase tracking-[0.2em] text-teal-200">
-            First Grade Finance · Operations
+            Meridian Finance · Operations
           </p>
           <h1 className="mt-3 text-30 font-semibold sm:text-36">
             Admin command center

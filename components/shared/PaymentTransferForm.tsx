@@ -667,7 +667,7 @@ const PaymentTransferForm = ({ accounts }: PaymentTransferFormProps) => {
             {receipt.customerNotice && (
               <div className="mt-4 rounded-xl border border-blue-100 bg-blue-25 p-4">
                 <p className="text-10 font-semibold uppercase tracking-wide text-blue-700">
-                  Message from First Grade Finance
+                  Message from Meridian Finance
                 </p>
                 <p className="mt-2 whitespace-pre-wrap break-words text-14 leading-6 text-blue-900">
                   {receipt.customerNotice}
