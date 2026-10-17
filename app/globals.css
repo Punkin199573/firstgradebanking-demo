@@ -878,4 +878,84 @@ textarea {
     background: #3c3424;
     color: #f0cc77;
   }
+
+  /* First Grade Finance dark surface system */
+  html[data-theme="dark"] .home-content,
+  html[data-theme="dark"] .my-banks,
+  html[data-theme="dark"] .transactions,
+  html[data-theme="dark"] .payment-transfer {
+    background:
+      radial-gradient(circle at 100% 0%, rgba(35, 173, 151, 0.1), transparent 26rem),
+      #0a1723;
+  }
+
+  html[data-theme="dark"] .total-balance,
+  html[data-theme="dark"] .bank-info,
+  html[data-theme="dark"] .auth-preview-card,
+  html[data-theme="dark"] .transactions-table-scroll,
+  html[data-theme="dark"] .transfer-form-card {
+    border-color: rgba(124, 173, 180, 0.2);
+    background: linear-gradient(145deg, rgba(21, 48, 64, 0.96), rgba(14, 34, 47, 0.96));
+    box-shadow: 0 24px 60px -42px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.045);
+  }
+
+  html[data-theme="dark"] .total-balance-label,
+  html[data-theme="dark"] .recent-transactions-label,
+  html[data-theme="dark"] .header-box-title,
+  html[data-theme="dark"] .profile-name {
+    color: #f2f7f8 !important;
+  }
+
+  html[data-theme="dark"] .total-balance-amount {
+    color: #ffffff !important;
+    letter-spacing: -0.035em;
+  }
+
+  html[data-theme="dark"] .root-layout {
+    background: rgba(10, 23, 35, 0.86);
+    box-shadow: 0 10px 30px -28px rgba(0, 0, 0, 0.9);
+    backdrop-filter: blur(22px);
+  }
+
+  html[data-theme="dark"] .sidebar {
+    background:
+      radial-gradient(circle at 0% 0%, rgba(35, 173, 151, 0.09), transparent 18rem),
+      linear-gradient(180deg, #0d202f 0%, #091724 100%);
+  }
+
+  html[data-theme="dark"] .sidebar-link[aria-current="page"] {
+    border: 1px solid rgba(117, 226, 202, 0.22);
+    background: linear-gradient(110deg, rgba(28, 105, 99, 0.9), rgba(18, 64, 69, 0.9)) !important;
+    box-shadow: 0 14px 30px -20px rgba(60, 218, 187, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  }
+
+  html[data-theme="dark"] .sidebar-link:not([aria-current="page"]):hover {
+    background: rgba(45, 100, 108, 0.28) !important;
+  }
+
+  html[data-theme="dark"] .input-class:focus,
+  html[data-theme="dark"] input:focus,
+  html[data-theme="dark"] textarea:focus,
+  html[data-theme="dark"] select:focus {
+    border-color: #4fd1b4;
+    box-shadow: 0 0 0 4px rgba(79, 209, 180, 0.13), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  }
+
+  html[data-theme="dark"] .bank-card {
+    border-color: rgba(160, 234, 220, 0.24);
+    box-shadow: 0 28px 55px -30px rgba(0, 0, 0, 0.95), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  }
+
+  html[data-theme="dark"] .transactions-account {
+    border: 1px solid rgba(137, 229, 210, 0.2);
+    background:
+      radial-gradient(circle at 92% 0%, rgba(67, 222, 190, 0.24), transparent 34%),
+      linear-gradient(125deg, #102637 0%, #124b50 100%);
+  }
+
+  html[data-theme="dark"] .theme-toggle:hover,
+  html[data-theme="dark"] .mobile-menu-trigger:hover {
+    border-color: #4fd1b4;
+    background: rgba(53, 139, 128, 0.24);
+  }
 }
