@@ -5,6 +5,7 @@ import MobileNav from "@/components/shared/MobileNav";
 import { getLoggedInUser } from "@/lib/actions/user.action";
 import { redirect } from "next/navigation";
 import ThemeToggle from "@/components/shared/ThemeToggle";
+import TawkChat from "@/components/shared/TawkChat";
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +19,9 @@ export default async function Layout({
     redirect("/sign-in");
   }
   return (
-    <main className="app-shell flex h-dvh min-h-[100svh] w-full overflow-hidden font-inter">
+    <>
+      <TawkChat />
+      <main className="app-shell flex h-dvh min-h-[100svh] w-full overflow-hidden font-inter">
       <Sidebar user={loggedIn} />
       <div className="flex min-h-0 min-w-0 flex-1 flex-col">
         <div className="root-layout">
@@ -38,6 +41,7 @@ export default async function Layout({
         </div>
         <div className="min-h-0 min-w-0 flex-1 overflow-y-auto">{children}</div>
       </div>
-    </main>
+      </main>
+    </>
   );
 }

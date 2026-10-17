@@ -8,6 +8,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { transactionCategoryStyles } from "@/constants";
+import { MessageCircle } from "lucide-react";
 import {
   cn,
   formatAmount,
@@ -27,6 +28,11 @@ const CategoryBadge = ({ category }: CategoryBadgeProps) => {
       <p className={cn("text-[12px] font-medium", textColor)}>{category}</p>
     </div>
   );
+};
+
+const openSupportChat = () => {
+  const tawk = (window as Window & { Tawk_API?: { maximize?: () => void } }).Tawk_API;
+  tawk?.maximize?.();
 };
 
 const TransactionsTable = ({ transactions }: TransactionTableProps) => {
@@ -73,9 +79,21 @@ const TransactionsTable = ({ transactions }: TransactionTableProps) => {
                     </span>
                   </div>
                   {t.customerNotice && (
-                    <p className="mt-1 max-w-[260px] whitespace-normal text-12 text-gray-500">
-                      {t.customerNotice}
-                    </p>
+                    <div className="mt-2 flex max-w-[280px] flex-col items-start gap-2">
+                      <p className="whitespace-normal text-12 text-gray-500">
+                        {t.customerNotice}
+                      </p>
+                      {t.status !== "successful" && (
+                        <button
+                          type="button"
+                          onClick={openSupportChat}
+                          className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-teal-200 bg-teal-50 px-3 py-2 text-12 font-semibold text-teal-800 transition-colors hover:bg-teal-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2"
+                        >
+                          <MessageCircle aria-hidden="true" className="size-4" />
+                          Contact support
+                        </button>
+                      )}
+                    </div>
                   )}
                 </TableCell>
 
