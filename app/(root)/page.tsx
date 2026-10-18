@@ -31,6 +31,13 @@ const Home = async ({ searchParams: { id } }: SearchParamProps) => {
   return (
     <section className="home">
       <div className="home-content">
+        <div className="home-intro-bar" aria-label="Account overview status">
+          <div>
+            <p className="home-eyebrow">Financial overview</p>
+            <p className="home-intro-copy">A clear view of what matters most today.</p>
+          </div>
+          <span className="home-status"><span className="home-status-dot" />Accounts connected</span>
+        </div>
         <header className="home-header">
           <HeaderBox
             type="greeting"
