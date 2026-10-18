@@ -28,7 +28,7 @@ export const getNavigationLinks = (role: User["role"]) => [
         {
           imgURL: "/icons/monitor.svg",
           route: "/admin",
-          label: "Admin Console",
+          label: "Operations", 
         },
       ]
     : []),

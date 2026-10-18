@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import {
   getSimulatedTransferStatus,
-  simulateDemoTransfer,
+  createTransferRequest,
 } from "@/lib/actions/transaction.action";
 import { formatAmount } from "@/lib/utils";
 import { Button } from "../ui/button";
@@ -86,7 +86,7 @@ const PaymentTransferForm = ({ accounts }: PaymentTransferFormProps) => {
               accountNumber: recipientAccountNumber,
             }
           : undefined;
-      const result = await simulateDemoTransfer({
+      const result = await createTransferRequest({
         senderAccountId,
         receiverAccountId,
         amount: parsedAmount,
@@ -553,7 +553,7 @@ const PaymentTransferForm = ({ accounts }: PaymentTransferFormProps) => {
                   What happens next?
                 </h3>
                 <p className="mt-1 text-12 leading-5 text-gray-600">
-                  Your request is recorded as pending. An administrator can
+                  Your request is recorded as pending. Our review team can
                   update its status; a successful update changes only your
                   pending account balance.
                 </p>
@@ -637,17 +637,17 @@ const PaymentTransferForm = ({ accounts }: PaymentTransferFormProps) => {
             </h2>
             <p className="mt-3 text-14 leading-6 text-gray-600">
               {receipt.status === "successful"
-                ? "The administrator marked this pending request successful. Your pending account balance has been updated."
+                ? "Our review team marked this pending request successful. Your pending account balance has been updated."
                 : receipt.status === "failed"
-                  ? "The administrator marked this pending request failed. Account balances were not changed."
+                  ? "Our review team marked this pending request failed. Account balances were not changed."
                   : receipt.status === "on_hold"
-                    ? "The administrator placed this pending request on hold. Your pending balance has not changed."
+                    ? "Our review team placed this pending request on hold. Your pending balance has not changed."
                     : receipt.status === "action_required"
-                      ? "The administrator needs more information before updating this pending request. Your pending balance has not changed."
-                      : "This pending request is awaiting an administrator status update. Account balances will not change unless it is marked successful."}
+                      ? "Our review team needs more information before updating this pending request. Your pending balance has not changed."
+                      : "This pending request is awaiting a review status update. Account balances will not change unless it is marked successful."}
             </p>
             <p className="mt-2 text-12 text-gray-500">
-              Status and administrator messages refresh automatically while
+              Status and review messages refresh automatically while
               this screen is open.
             </p>
             {receipt.recipient && (

@@ -17,12 +17,12 @@ export default async function AdminPage() {
             First Grade Finance · Operations
           </p>
           <h1 className="mt-2 text-24 font-semibold text-gray-900">
-            Admin access isn&apos;t enabled for this account
+            Operations access isn&apos;t enabled for this account
           </h1>
           <p className="mt-3 text-14 leading-6 text-gray-600">
-            Admin access is granted by the Supabase project owner. Ask them to
+            Operations access is granted by the workspace owner. Ask them to
             promote your account using the steps in the project&apos;s
-            &quot;Enable the admin console&quot; setup guide, then sign out and
+            &quot;Enable operations access&quot; setup guide, then sign out and
             sign back in.
           </p>
           <Link

@@ -144,7 +144,7 @@ export default function AdminDashboard({ data }: { data: AdminData }) {
       setError(
         submitError instanceof Error
           ? submitError.message
-          : "Admin action failed."
+          : "Action could not be completed."
       );
     } finally {
       setBusy(false);
@@ -159,7 +159,7 @@ export default function AdminDashboard({ data }: { data: AdminData }) {
             First Grade Finance · Operations
           </p>
           <h1 className="mt-3 text-30 font-semibold sm:text-36">
-            Admin command center
+            Operations overview
           </h1>
           <p className="mt-3 max-w-2xl text-14 leading-6 text-slate-300">
             Manage account accounts, transaction lifecycles, and customer
@@ -676,7 +676,7 @@ export default function AdminDashboard({ data }: { data: AdminData }) {
 
           <section className="rounded-2xl border border-gray-200 bg-white p-5 shadow-chart">
             <h2 className="text-18 font-semibold text-gray-900">
-              Recent admin audit trail
+              Recent activity
             </h2>
             <div className="mt-3 divide-y divide-gray-100">
               {data.auditLog
@@ -702,7 +702,7 @@ export default function AdminDashboard({ data }: { data: AdminData }) {
                 (entry) => entry.target_user_id === selectedUserId
               ).length === 0 && (
                 <p className="py-4 text-12 text-gray-500">
-                  No admin actions recorded for this user.
+                  No activity recorded for this user.
                 </p>
               )}
             </div>

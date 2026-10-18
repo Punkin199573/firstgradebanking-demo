@@ -61,9 +61,10 @@ const TransactionsTable = ({ transactions }: TransactionTableProps) => {
             const amount = formatAmount(t.amount);
 
             const isDebit = t.type === "debit";
-            const channel = t.paymentChannel.startsWith("simulated_")
-              ? `${t.paymentChannel.slice("simulated_".length).replaceAll("_", " ").toUpperCase()}`
-              : t.paymentChannel;
+            const channel = t.paymentChannel
+              .replace(/^simulated_/, "")
+              .replaceAll("_", " ")
+              .toUpperCase();
 
             return (
               <TableRow

@@ -24,7 +24,7 @@ type DemoTransferInput = {
   };
 };
 
-export async function simulateDemoTransfer({
+export async function createTransferRequest({
   senderAccountId,
   receiverAccountId,
   amount,
@@ -107,7 +107,7 @@ export async function simulateDemoTransfer({
       direction: "debit",
       status: "pending",
       notice:
-        "Your transfer request is awaiting an administrator status update.",
+        "Your transfer request is awaiting a review status update.",
       reference: data,
       transferType: transferType.toUpperCase(),
     }),
