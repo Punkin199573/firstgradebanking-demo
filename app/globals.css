@@ -162,12 +162,47 @@ textarea {
     @apply flex flex-col justify-between gap-6;
   }
 
-  .total-balance {
-    @apply flex w-full items-center gap-4 rounded-2xl border p-4 sm:gap-6 sm:p-6;
-    border-color: var(--line);
-    background: var(--surface-raised);
-    box-shadow: 0 18px 45px -34px rgba(18, 51, 48, 0.45);
+  .total-balance-shell {
+  @apply flex w-full flex-col gap-5 rounded-2xl border p-4 sm:p-6;
+  border-color: var(--line);
+  background: var(--surface-raised);
+  box-shadow: 0 18px 45px -34px rgba(18, 51, 48, 0.45);
   }
+
+  .total-balance-summary {
+  @apply flex items-center gap-4;
+  }
+
+  .total-balance-copy {
+  @apply flex min-w-0 flex-1 flex-col gap-2;
+  }
+
+  .account-count {
+  @apply rounded-full px-2 py-1 text-10 font-semibold;
+  color: var(--accent-strong);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  }
+
+  .balance-carousel { @apply min-w-0; }
+  .balance-carousel-heading { @apply flex items-end justify-between gap-3; }
+  .section-kicker { @apply text-12 font-semibold uppercase tracking-[0.14em]; color: var(--muted-strong); }
+  .balance-carousel-caption { @apply mt-1 text-12; color: var(--muted); }
+  .balance-carousel-controls { @apply hidden gap-2 sm:flex; }
+  .balance-carousel-controls button { @apply flex size-9 items-center justify-center rounded-full border transition-colors; border-color: var(--line); color: var(--muted-strong); background: var(--surface); }
+  .balance-carousel-controls button:hover { border-color: var(--accent); color: var(--accent-strong); }
+  .balance-carousel-scroller { @apply flex snap-x snap-mandatory gap-3 overflow-x-auto pb-1 outline-none; scrollbar-width: none; }
+  .balance-carousel-scroller::-webkit-scrollbar { display: none; }
+  .account-balance-card { @apply min-w-[270px] snap-start rounded-2xl border p-4 sm:min-w-[290px]; border-color: color-mix(in srgb, var(--accent) 25%, var(--line)); color: #f6fffd; background: linear-gradient(145deg, #153f43 0%, #0e252d 58%, #0b1b25 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,.12), 0 18px 35px -26px rgba(4, 32, 35, .8); }
+  .account-balance-card-1 { background: linear-gradient(145deg, #263659 0%, #172742 58%, #101d32 100%); }
+  .account-balance-card-2 { background: linear-gradient(145deg, #4a3a2c 0%, #2d2630 58%, #191c29 100%); }
+  .account-balance-card-topline, .account-balance-footer { @apply flex items-center justify-between gap-3; }
+  .account-balance-icon { @apply flex size-9 items-center justify-center rounded-xl bg-white/10; }
+  .account-balance-icon svg { @apply size-4; }
+  .account-balance-type { @apply text-11 font-medium capitalize text-white/65; }
+  .account-balance-name { @apply mt-5 truncate text-14 font-medium text-white/85; }
+  .account-balance-value { @apply mt-1 text-26 font-semibold tracking-[-0.04em] text-white; }
+  .account-balance-footer { @apply mt-5 text-11 text-white/60; }
+  .account-balance-empty { @apply min-h-[150px]; }
 
   .total-balance-chart {
     @apply flex size-full max-w-[100px] items-center sm:max-w-[120px];
