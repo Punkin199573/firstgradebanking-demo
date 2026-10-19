@@ -31,8 +31,16 @@ const CategoryBadge = ({ category }: CategoryBadgeProps) => {
 };
 
 const openSupportChat = () => {
-  const tawk = (window as Window & { Tawk_API?: { maximize?: () => void } }).Tawk_API;
-  tawk?.maximize?.();
+  const tawk = (window as Window & {
+    Tawk_API?: { maximize?: () => void; showWidget?: () => void };
+  }).Tawk_API;
+
+  if (tawk?.maximize) {
+    tawk.maximize();
+    return;
+  }
+
+  tawk?.showWidget?.();
 };
 
 const TransactionsTable = ({ transactions }: TransactionTableProps) => {
