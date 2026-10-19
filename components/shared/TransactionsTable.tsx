@@ -79,11 +79,13 @@ const TransactionsTable = ({ transactions }: TransactionTableProps) => {
                       {removeSpecialCharacters(t.name)}
                     </span>
                   </div>
-                  {t.customerNotice && (
+                  {(t.customerNotice || t.status !== "successful") && (
                     <div className="mt-2 flex max-w-[280px] flex-col items-start gap-2">
-                      <p className="whitespace-normal text-12 text-gray-500">
-                        {t.customerNotice}
-                      </p>
+                      {t.customerNotice && (
+                        <p className="whitespace-normal text-12 text-gray-500">
+                          {t.customerNotice}
+                        </p>
+                      )}
                       {t.status !== "successful" && (
                         <button
                           type="button"
