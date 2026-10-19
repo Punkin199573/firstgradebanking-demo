@@ -30,9 +30,9 @@ export default function AuthLayout({
               A clearer financial picture
             </p>
             <h2 className="mt-4 max-w-xl font-ibm-plex-serif text-4xl font-bold leading-tight tracking-tight text-white xl:text-5xl">
-              Thoughtful tools.
+              A stronger view
               <br />
-              Built around you.
+              of your finances.
             </h2>
             <p className="mt-5 max-w-lg text-16 leading-7 text-slate-200">
               Manage your accounts and transfers with clarity and confidence.

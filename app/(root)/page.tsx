@@ -33,17 +33,17 @@ const Home = async ({ searchParams: { id } }: SearchParamProps) => {
       <div className="home-content">
         <div className="home-intro-bar" aria-label="Account overview status">
           <div>
-            <p className="home-eyebrow">Financial overview</p>
-            <p className="home-intro-copy">A clear view of what matters most today.</p>
+            <p className="home-eyebrow">First Grade Finance</p>
+            <p className="home-intro-copy">Your money, accounts, and activity in one clear view.</p>
           </div>
           <span className="home-status"><span className="home-status-dot" />Accounts connected</span>
         </div>
         <header className="home-header">
           <HeaderBox
             type="greeting"
-            title="Welcome"
+            title="Good to see you"
             user={loggedIn?.firstName || "Guest"}
-            subtext="Explore your accounts and transaction activity."
+            subtext="Your financial position, organized for today."
           />
           <TotalBalanceBox
             accounts={accounts?.data}

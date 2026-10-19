@@ -114,8 +114,6 @@ const AuthForm = ({ type }: AuthFormProps) => {
               ? "Welcome back. Enter your credentials to continue."
               : "Create your First Grade Finance account."}
           </p>
-          <p className="mt-2 rounded-xl border border-teal-100 bg-teal-50 px-3 py-2 text-12 text-teal-900">
-          </p>
         </div>
       </header>
 
