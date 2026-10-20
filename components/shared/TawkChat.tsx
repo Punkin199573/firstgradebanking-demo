@@ -13,6 +13,9 @@ type TawkApi = {
   showWidget?: () => void;
 };
 
+const TAWK_PROPERTY_ID = "6ad332f98572d134c5b88f11";
+const TAWK_WIDGET_ID = "1k54fu89n";
+
 declare global {
   interface Window {
     Tawk_API?: TawkApi;
@@ -25,25 +28,16 @@ const TawkChat = () => {
   const pendingOpen = useRef(false);
   const openTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const propertyId = process.env.NEXT_PUBLIC_TAWK_PROPERTY_ID;
-  const widgetId = process.env.NEXT_PUBLIC_TAWK_WIDGET_ID;
-
   const openWidget = useCallback(() => {
     const tawk = window.Tawk_API;
-    if (tawk?.maximize) {
-      tawk.maximize();
-      return true;
-    }
-    if (tawk?.showWidget) {
-      tawk.showWidget();
-      return true;
-    }
-    return false;
+    if (!tawk?.showWidget && !tawk?.maximize) return false;
+
+    tawk.showWidget?.();
+    tawk.maximize?.();
+    return true;
   }, []);
 
   useEffect(() => {
-    if (!propertyId || !widgetId) return;
-
     const tawk = (window.Tawk_API = window.Tawk_API || {});
     tawk.onLoad = () => {
       if (pendingOpen.current && openWidget()) {
@@ -58,8 +52,9 @@ const TawkChat = () => {
       const script = document.createElement("script");
       script.id = "tawk-to-widget";
       script.async = true;
-      script.src = `https://embed.tawk.to/${propertyId}/${widgetId}`;
-      script.crossOrigin = "anonymous";
+      script.src = `https://embed.tawk.to/${TAWK_PROPERTY_ID}/${TAWK_WIDGET_ID}`;
+      script.setAttribute("charset", "UTF-8");
+      script.setAttribute("crossorigin", "*");
       script.onerror = () => {
         if (pendingOpen.current) {
           pendingOpen.current = false;
@@ -72,15 +67,10 @@ const TawkChat = () => {
     return () => {
       tawk.onLoad = undefined;
     };
-  }, [openWidget, propertyId, widgetId]);
+  }, [openWidget]);
 
   useEffect(() => {
     const handleOpenRequest = () => {
-      if (!propertyId || !widgetId) {
-        setShowFallback(true);
-        return;
-      }
-
       pendingOpen.current = true;
       if (openWidget()) {
         pendingOpen.current = false;
@@ -102,7 +92,7 @@ const TawkChat = () => {
       window.removeEventListener(SUPPORT_CHAT_REQUEST_EVENT, handleOpenRequest);
       if (openTimeout.current) clearTimeout(openTimeout.current);
     };
-  }, [openWidget, propertyId, widgetId]);
+  }, [openWidget]);
 
   return (
     <>
@@ -147,19 +137,17 @@ const TawkChat = () => {
               </button>
             </div>
             <p className="mt-3 text-sm leading-6 text-slate-600">
-              Live chat is not available right now. Please try again later or
-              contact the app administrator to configure the support chat.
+              The live chat widget could not be reached. Please try again, or
+              contact support later.
             </p>
-            {propertyId && widgetId && (
-              <button
-                type="button"
-                className="mt-5 inline-flex min-h-11 items-center justify-center rounded-xl bg-teal-700 px-4 text-sm font-semibold text-white hover:bg-teal-800"
-                onClick={requestSupportChat}
-              >
-                <MessageCircle aria-hidden="true" className="mr-2 size-4" />
-                Try chat again
-              </button>
-            )}
+            <button
+              type="button"
+              className="mt-5 inline-flex min-h-11 items-center justify-center rounded-xl bg-teal-700 px-4 text-sm font-semibold text-white hover:bg-teal-800"
+              onClick={requestSupportChat}
+            >
+              <MessageCircle aria-hidden="true" className="mr-2 size-4" />
+              Try chat again
+            </button>
           </section>
         </div>
       )}

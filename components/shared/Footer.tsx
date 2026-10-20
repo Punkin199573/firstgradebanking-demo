@@ -3,6 +3,8 @@ import { signOut } from "@/lib/actions/user.action";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import React from "react";
+import { MessageCircle } from "lucide-react";
+import { requestSupportChat } from "@/lib/support-chat";
 
 const Footer = ({ user, type }: FooterProps) => {
   const router = useRouter();
@@ -38,6 +40,15 @@ const Footer = ({ user, type }: FooterProps) => {
           </p>
         </h1>
       </div>
+      <button
+        type="button"
+        className="inline-flex size-10 shrink-0 items-center justify-center rounded-xl text-teal-700 transition-colors hover:bg-teal-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600"
+        onClick={requestSupportChat}
+        aria-label="Contact support"
+        title="Contact support"
+      >
+        <MessageCircle aria-hidden="true" size={20} />
+      </button>
       <button
         type="button"
         className="footer_image"

@@ -91,15 +91,10 @@ create paired ledger entries atomically in the database.
    EMAIL_FROM="First Grade Finance <notifications@your-verified-domain.example>"
    SUPABASE_SERVICE_ROLE_KEY=your-supabase-service-role-key
    APP_ROUTING_NUMBER=your-nine-digit-routing-number
-   NEXT_PUBLIC_TAWK_PROPERTY_ID=your-tawk-property-id
-   NEXT_PUBLIC_TAWK_WIDGET_ID=your-tawk-widget-id
    ```
 
-   Get the Tawk.to property and widget IDs from the widget's embed-code URL.
-   These public IDs enable the live chat widget; add them to the deployment
-   environment and redeploy. If either ID is missing or the widget fails to
-   load, the app displays a support availability message instead of silently
-   ignoring chat requests.
+   The Tawk.to support widget is configured in the app. Transaction support,
+   the account footer, and the mobile support button all open the same widget.
 
    `APP_ROUTING_NUMBER` is optional and server-only. When set to exactly nine
    digits, it is shown as the app's routing number in account details. A
