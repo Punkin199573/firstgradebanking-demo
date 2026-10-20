@@ -7,7 +7,8 @@ import { getLoggedInUser } from "@/lib/actions/user.action";
 import { redirect } from "next/navigation";
 import React from "react";
 
-const Home = async ({ searchParams: { id } }: SearchParamProps) => {
+const Home = async ({ searchParams }: SearchParamProps) => {
+  const { id } = await searchParams;
   const loggedIn = await getLoggedInUser();
   if (!loggedIn) redirect("/sign-in");
 
