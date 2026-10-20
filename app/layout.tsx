@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Inter, IBM_Plex_Serif } from "next/font/google";
-// @ts-expect-error Next.js handles global CSS imports at runtime.
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
