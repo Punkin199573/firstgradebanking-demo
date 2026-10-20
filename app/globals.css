@@ -198,10 +198,10 @@ textarea {
   .account-balance-card-topline, .account-balance-footer { @apply flex items-center justify-between gap-3; }
   .account-balance-icon { @apply flex size-9 items-center justify-center rounded-xl bg-white/10; }
   .account-balance-icon svg { @apply size-4; }
-  .account-balance-type { @apply text-11 font-medium capitalize text-white/65; }
+  .account-balance-type { @apply text-[11px] leading-[16px] font-medium capitalize text-white/65; }
   .account-balance-name { @apply mt-5 truncate text-14 font-medium text-white/85; }
   .account-balance-value { @apply mt-1 text-26 font-semibold tracking-[-0.04em] text-white; }
-  .account-balance-footer { @apply mt-5 text-11 text-white/60; }
+  .account-balance-footer { @apply mt-5 text-[11px] leading-[16px] text-white/60; }
   .account-balance-empty { @apply min-h-[150px]; }
 
   .total-balance-chart {
