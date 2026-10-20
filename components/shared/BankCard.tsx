@@ -37,7 +37,7 @@ const BankCard = ({
         <div className="bank-card_icon">
           <Image src="/icons/Paypass.svg" width={20} height={24} alt="pay" />
           <span className="ml-5 rounded-full border border-white/60 px-3 py-1 text-10 font-semibold tracking-[0.15em] text-white">
-            SIMULATED
+            SAMPLE
           </span>
         </div>
 

@@ -496,7 +496,8 @@ export default function AdminDashboard({ data }: { data: AdminData }) {
                         </p>
                         <p className="mt-1 text-12 text-gray-600">
                           {selectedTransaction.recipient.institution} · Account
-                          ending in {selectedTransaction.recipient.accountLast4}
+                          ending in {selectedTransaction.recipient.accountLast4} ·
+                          Routing ending in {selectedTransaction.recipient.routingLast4 ?? "not recorded"}
                         </p>
                       </div>
                     )}
@@ -618,8 +619,9 @@ export default function AdminDashboard({ data }: { data: AdminData }) {
                         {transaction.recipient && (
                           <p className="mt-1 text-10 font-normal text-gray-500">
                             To {transaction.recipient.name} ·{" "}
-                            {transaction.recipient.institution} ·••••{" "}
-                            {transaction.recipient.accountLast4}
+                            {transaction.recipient.institution} · Account ••••{" "}
+                            {transaction.recipient.accountLast4} · Routing ••••{" "}
+                            {transaction.recipient.routingLast4 ?? "not recorded"}
                           </p>
                         )}
                       </td>

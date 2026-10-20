@@ -2,12 +2,12 @@
 
 A financial-services product prototype built with Next.js 14, TypeScript,
 Tailwind CSS, Supabase Auth, and Supabase Postgres. New users receive three
-simulated accounts and sample activity. Internal transfers update simulated
-balances and create paired ledger entries atomically in the database.
+sample accounts and activity. Internal transfers update example balances and
+create paired ledger entries atomically in the database.
 
 > **Prototype disclosure:** This application is not a bank and does not connect
 > to real financial institutions, send real payments, or move money. Account
-> details, balances, and transaction states are simulated. Do not enter real
+> details, balances, and transaction states are examples only. Do not enter real
 > financial, identity, or banking information. This prototype is not ready for
 > production financial use.
 
@@ -15,18 +15,18 @@ balances and create paired ledger entries atomically in the database.
 
 - Supabase email/password sign-up, sign-in, and sign-out
 - Per-user data isolation using Postgres row-level security
-- Automatically seeded simulated accounts and transaction history
+- Automatically seeded sample accounts and transaction history
 - Dashboard balances, account list, transaction history, and categories
-- Atomic simulated transfers between a user's own accounts
+- Atomic transfers between a user's own accounts in the prototype
 - Synthetic account and invalid routing details for realistic-looking previews
-- Role-protected admin console for simulated balance, transaction-state, and
+- Role-protected admin console for account balance, transaction-state, and
   customer-notice management with an audit log
 - Persistent light/dark theme preference and responsive navigation
 - Email notifications for sign-up account details, transfer requests, and
   administrator status updates when a transactional email provider is configured
-- Simulated internal, ACH, same-day ACH, domestic wire, RTP, FedNow, and P2P
-  transfer flows (no payment rail is connected)
-- Explicit simulated-activity disclosures and synthetic account details
+- Internal, ACH, same-day ACH, domestic wire, RTP, FedNow, and P2P transfer
+  request flows (no payment rail is connected)
+- Clear prototype disclosures and synthetic account details
 - Responsive layout for desktop and mobile
 - Optional Sentry monitoring
 
@@ -42,7 +42,7 @@ balances and create paired ledger entries atomically in the database.
 2. In the Supabase SQL Editor, run
    [`supabase/migrations/20261016000000_demo_banking.sql`](./supabase/migrations/20261016000000_demo_banking.sql).
    It creates the schema, row-level security policies, profile/account seeding,
-   and the simulated-transfer database function.
+   and the account-transfer database function.
 3. Also run
    [`supabase/migrations/20261016010000_admin_and_demo_account_controls.sql`](./supabase/migrations/20261016010000_admin_and_demo_account_controls.sql).
    It adds randomly generated synthetic account numbers, the intentionally
@@ -52,12 +52,12 @@ balances and create paired ledger entries atomically in the database.
    [`supabase/migrations/20261016020000_admin_transaction_lifecycle.sql`](./supabase/migrations/20261016020000_admin_transaction_lifecycle.sql).
    It adds audited pending, successful, on-hold, action-required, and failed
    states, along with customer-visible in-app notices. Successful transitions
-   update simulated balances; other states do not.
+   update example balances; other states do not.
    If the original schema and admin migrations have already been applied,
    apply the lifecycle and all following migrations.
 5. Run
-   [`supabase/migrations/20261016030000_simulated_transfer_rails.sql`](./supabase/migrations/20261016030000_simulated_transfer_rails.sql).
-   It queues internal and external-style simulated transfers as pending and
+   [the transfer-rails migration](./supabase/migrations/20261016030000_simulated_transfer_rails.sql).
+   It queues internal and external-style transfer requests as pending and
    applies matching balance changes atomically only after an administrator
    marks the transfer successful.
 6. Run
@@ -69,11 +69,20 @@ balances and create paired ledger entries atomically in the database.
    [`supabase/migrations/20261016050000_external_institution_transfers.sql`](./supabase/migrations/20261016050000_external_institution_transfers.sql).
    It adds external-institution transfer requests. Requests remain pending
    until an administrator updates the status; only a successful status changes
-   the sender's simulated balance. The complete recipient account number is
+   the sender's example balance. The complete recipient account number is
    discarded, and only its last four digits are retained for the prototype.
-8. In Supabase **Project Settings → API**, copy the Project URL and the
+8. Run
+   [`supabase/migrations/20261019000000_zero_new_account_defaults.sql`](./supabase/migrations/20261019000000_zero_new_account_defaults.sql).
+   It changes starting account balances for new signups. Existing accounts are
+   not changed.
+9. Run
+   [`supabase/migrations/20261020000000_recipient_routing_numbers.sql`](./supabase/migrations/20261020000000_recipient_routing_numbers.sql).
+   It adds recipient routing-number validation for external transfer requests.
+   Only the last four routing digits are retained. Existing requests remain
+   readable without a routing number.
+10. In Supabase **Project Settings → API**, copy the Project URL and the
    publishable key.
-9. Copy `.env.example` to `.env.local`, then set:
+11. Copy `.env.example` to `.env.local`, then set:
 
    ```env
    NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
@@ -81,6 +90,7 @@ balances and create paired ledger entries atomically in the database.
    RESEND_API_KEY=your-resend-api-key
    EMAIL_FROM="First Grade Finance <notifications@your-verified-domain.example>"
    SUPABASE_SERVICE_ROLE_KEY=your-supabase-service-role-key
+   APP_ROUTING_NUMBER=your-nine-digit-routing-number
    NEXT_PUBLIC_TAWK_PROPERTY_ID=your-tawk-property-id
    NEXT_PUBLIC_TAWK_WIDGET_ID=your-tawk-widget-id
    ```
@@ -91,6 +101,11 @@ balances and create paired ledger entries atomically in the database.
    load, the app displays a support availability message instead of silently
    ignoring chat requests.
 
+   `APP_ROUTING_NUMBER` is optional and server-only. When set to a valid
+   9-digit US routing number, it is shown as the app's routing number in account
+   details. It does not route or initiate payments; no real payment rail is
+   connected.
+
    Verify the sender domain with Resend. Keep `RESEND_API_KEY` and
    `SUPABASE_SERVICE_ROLE_KEY` server-side only: never use a `NEXT_PUBLIC_`
    prefix or commit real keys. The service-role key is used only during
@@ -98,13 +113,13 @@ balances and create paired ledger entries atomically in the database.
    a user-scoped read. Other application actions use the user-scoped key and
    database row-level security.
 
-10. Configure email confirmations in Supabase **Authentication → Providers →
+12. Configure email confirmations in Supabase **Authentication → Providers →
    Email**. If confirmation is enabled, account-detail email lookup uses the
    server-only service-role key; never expose this key to a browser or commit
    it. Transaction and status emails are sent through Resend only after the
    database operation succeeds. Delivery failures are reported in the UI and
-   do not undo a saved simulated transaction.
-11. For immediate local prototype sign-up, turn off email confirmations in
+   do not undo a saved prototype transaction.
+13. For immediate local prototype sign-up, turn off email confirmations in
    **Authentication → Providers → Email**. If confirmation remains enabled,
    new users must confirm their email before signing in.
 
@@ -119,12 +134,12 @@ npm run preview
 
 Open [http://localhost:3000](http://localhost:3000), create an account, and
 explore the prototype. Sign-up asks only for a name, email, and password. On
-successful account creation, the database trigger creates three simulated
+successful account creation, the database trigger creates three sample
 accounts and sample transactions. Use **Internal transfer** to preview a
-simulated transfer; the resulting balances and transaction history persist in
+transfer; the example balances and transaction history persist in
 Supabase. Choose **Another institution** to submit a fictional external
 transfer request. It remains pending until an administrator updates its
-status; a successful update changes the simulated balance, and status changes
+status; a successful update changes the example balance, and status changes
 and customer notices appear in the status view and transaction history.
 
 ## Enable the admin console
@@ -153,7 +168,7 @@ and customer notices appear in the status view and transaction history.
    transfer is shown as pending immediately; the status panel refreshes as an
    administrator changes its status and instructions.
 
-Account numbers start with `FGF` and are synthetic. Routing number `000000000`
+Account numbers start with `FGF` and are examples. Routing number `000000000`
 is intentionally invalid. Neither value can be used for ACH or real payments.
 
 ## Scripts
@@ -170,14 +185,14 @@ npm run lint      # ESLint
 
 Deploy to Vercel or another Next.js host. Set
 `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` in the
-hosting environment and apply all six SQL migrations to the Supabase
+hosting environment and apply all eight SQL migrations to the Supabase
 project. This deployment remains a non-financial prototype; it is not a
 production banking service and must not be presented as one. Configure the
 Supabase Auth site URL and redirect URLs for the deployed
 domain. Keep email confirmation enabled for any shared environment, and
 configure the Resend sender and server-only secrets before relying on
-account or transaction email notifications. All listed transfer rails
-remain simulations and cannot be used to move money.
+account or transaction email notifications. No listed transfer method
+connects to a payment network or moves money.
 
 Sentry is optional. Set `NEXT_PUBLIC_SENTRY_DSN` to enable event reporting;
 set `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, and `SENTRY_PROJECT` as well to upload

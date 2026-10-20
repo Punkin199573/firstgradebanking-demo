@@ -3,8 +3,9 @@
 import { revalidatePath } from "next/cache";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { formatTransactionEmail, sendTransactionalEmail } from "@/lib/email";
+import { isValidRoutingNumber } from "@/lib/routing-number";
 
-type DemoTransferInput = {
+type TransferRequestInput = {
   senderAccountId: string;
   receiverAccountId: string;
   amount: number;
@@ -21,6 +22,7 @@ type DemoTransferInput = {
     name: string;
     institution: string;
     accountNumber: string;
+    routingNumber: string;
   };
 };
 
@@ -31,7 +33,7 @@ export async function createTransferRequest({
   memo = "",
   transferType,
   recipient,
-}: DemoTransferInput) {
+}: TransferRequestInput) {
   if (!Number.isFinite(amount) || amount < 0.01 || amount > 10000) {
     throw new Error("Transfer amount must be between $0.01 and $10,000.");
   }
@@ -75,6 +77,9 @@ export async function createTransferRequest({
     if (!/^\d{4,17}$/.test(recipient.accountNumber)) {
       throw new Error("Use an account number with 4 to 17 digits.");
     }
+    if (!isValidRoutingNumber(recipient.routingNumber)) {
+      throw new Error("Enter a valid 9-digit routing number.");
+    }
   }
 
   const { data, error } = recipient
@@ -86,6 +91,7 @@ export async function createTransferRequest({
         p_recipient_name: recipient.name.trim(),
         p_recipient_institution: recipient.institution.trim(),
         p_recipient_account_number: recipient.accountNumber,
+        p_recipient_routing_number: recipient.routingNumber,
       })
     : await supabase.rpc("simulate_demo_transfer", {
         p_sender_account_id: senderAccountId,
@@ -95,7 +101,13 @@ export async function createTransferRequest({
         p_transfer_type: transferType,
       });
 
-  if (error) throw new Error(`Transfer failed: ${error.message}`);
+  if (error) {
+    const message = error.message
+      .replace(/\bsimulated\b/gi, "")
+      .replace(/\s+/g, " ")
+      .trim();
+    throw new Error(`Transfer failed: ${message}`);
+  }
   if (!data) throw new Error("The transfer did not return a receipt.");
 
   const email = await sendTransactionalEmail({
@@ -122,12 +134,13 @@ export async function createTransferRequest({
           name: recipient.name.trim(),
           institution: recipient.institution.trim(),
           accountLast4: recipient.accountNumber.slice(-4),
+          routingLast4: recipient.routingNumber.slice(-4),
         }
       : undefined,
   };
 }
 
-export async function getSimulatedTransferStatus(transferId: string) {
+export async function getTransferStatus(transferId: string) {
   if (!transferId) throw new Error("A transfer reference is required.");
   const supabase = createSupabaseServerClient();
   const { data: authData, error: authError } = await supabase.auth.getUser();
@@ -149,13 +162,18 @@ export async function getSimulatedTransferStatus(transferId: string) {
   }
 
   let recipient:
-    | { name: string; institution: string; accountLast4: string }
+    | {
+        name: string;
+        institution: string;
+        accountLast4: string;
+        routingLast4?: string;
+      }
     | undefined;
   if (data[0].transfer_id) {
     const { data: transfer, error: transferError } = await supabase
       .from("demo_transfers")
       .select(
-        "recipient_name, recipient_institution, recipient_account_last4"
+        "recipient_name, recipient_institution, recipient_account_last4, recipient_routing_last4"
       )
       .eq("id", data[0].transfer_id)
       .eq("user_id", authData.user.id)
@@ -175,6 +193,7 @@ export async function getSimulatedTransferStatus(transferId: string) {
         name: transfer.recipient_name,
         institution: transfer.recipient_institution,
         accountLast4: transfer.recipient_account_last4,
+        routingLast4: transfer.recipient_routing_last4 ?? undefined,
       };
     }
   }

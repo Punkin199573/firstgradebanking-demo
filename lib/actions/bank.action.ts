@@ -1,6 +1,7 @@
 "use server";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { getConfiguredAppRoutingNumber } from "@/lib/routing-number.server";
 
 type BankAccountRow = {
   id: string;
@@ -16,7 +17,10 @@ type BankAccountRow = {
   routing_number: string;
 };
 
-function toAccount(row: BankAccountRow): Account {
+function toAccount(
+  row: BankAccountRow,
+  appRoutingNumber?: string
+): Account {
   return {
     id: row.id,
     availableBalance: Number(row.available_balance),
@@ -28,11 +32,12 @@ function toAccount(row: BankAccountRow): Account {
     type: row.type,
     subtype: row.subtype,
     accountNumber: row.account_number,
-    routingNumber: row.routing_number,
+    routingNumber: appRoutingNumber ?? row.routing_number,
   };
 }
 
 export async function getAccounts({ userId }: getAccountsProps) {
+  const appRoutingNumber = getConfiguredAppRoutingNumber();
   const supabase = createSupabaseServerClient();
   const { data, error } = await supabase
     .from("bank_accounts")
@@ -45,7 +50,7 @@ export async function getAccounts({ userId }: getAccountsProps) {
   if (error) throw new Error(`Could not load bank accounts: ${error.message}`);
 
   const accounts = (data ?? []).map((row) =>
-    toAccount(row as BankAccountRow)
+    toAccount(row as BankAccountRow, appRoutingNumber)
   );
 
   return {
@@ -61,6 +66,7 @@ export async function getAccounts({ userId }: getAccountsProps) {
 export async function getAccount({ accountId }: getAccountProps) {
   if (!accountId) return null;
 
+  const appRoutingNumber = getConfiguredAppRoutingNumber();
   const supabase = createSupabaseServerClient();
   const { data: row, error } = await supabase
     .from("bank_accounts")
@@ -88,7 +94,7 @@ export async function getAccount({ accountId }: getAccountProps) {
   }
 
   return {
-    data: toAccount(row as BankAccountRow),
+    data: toAccount(row as BankAccountRow, appRoutingNumber),
     transactions: (transactions ?? []).map((transaction) => ({
       id: transaction.id,
       name: transaction.name,

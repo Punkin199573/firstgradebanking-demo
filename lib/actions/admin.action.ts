@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { getLoggedInUser } from "@/lib/actions/user.action";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { getConfiguredAppRoutingNumber } from "@/lib/routing-number.server";
 import { formatTransactionEmail, sendTransactionalEmail } from "@/lib/email";
 
 const transactionStatuses = [
@@ -74,6 +75,7 @@ async function requireAdmin() {
 
 export async function getAdminDashboardData() {
   await requireAdmin();
+  const appRoutingNumber = getConfiguredAppRoutingNumber();
   const supabase = createSupabaseServerClient();
 
   const [
@@ -111,7 +113,7 @@ export async function getAdminDashboardData() {
       supabase
         .from("demo_transfers")
         .select(
-          "id, recipient_name, recipient_institution, recipient_account_last4"
+          "id, recipient_name, recipient_institution, recipient_account_last4, recipient_routing_last4"
         )
         .not("recipient_name", "is", null)
         .order("created_at", { ascending: false })
@@ -139,13 +141,17 @@ export async function getAdminDashboardData() {
         name: transfer.recipient_name,
         institution: transfer.recipient_institution,
         accountLast4: transfer.recipient_account_last4,
+        routingLast4: transfer.recipient_routing_last4,
       },
     ])
   );
 
   return {
     users: profilesResult.data ?? [],
-    accounts: accountsResult.data ?? [],
+    accounts: (accountsResult.data ?? []).map((account) => ({
+      ...account,
+      routing_number: appRoutingNumber ?? account.routing_number,
+    })),
     transactions: (transactionsResult.data ?? []).map((transaction) => ({
       ...transaction,
       recipient: transaction.transfer_id
@@ -183,7 +189,13 @@ export async function adjustDemoAccountBalance(input: {
     p_note: input.note.trim(),
   });
 
-  if (error) throw new Error(`Balance adjustment failed: ${error.message}`);
+  if (error) {
+    const message = error.message
+      .replace(/\bsimulated\b/gi, "")
+      .replace(/\s+/g, " ")
+      .trim();
+    throw new Error(`Balance adjustment failed: ${message}`);
+  }
   if (!data) throw new Error("The adjustment did not return an audit receipt.");
   const email = await notifyTransaction(data);
   revalidatePath("/", "layout");
@@ -234,7 +246,13 @@ export async function recordDemoTransaction(input: {
     p_customer_notice: input.customerNotice.trim(),
   });
 
-  if (error) throw new Error(`Transaction creation failed: ${error.message}`);
+  if (error) {
+    const message = error.message
+      .replace(/\bsimulated\b/gi, "")
+      .replace(/\s+/g, " ")
+      .trim();
+    throw new Error(`Transaction creation failed: ${message}`);
+  }
   if (!data) throw new Error("The transaction did not return a receipt.");
   const email = await notifyTransaction(data);
   revalidatePath("/", "layout");
@@ -285,7 +303,13 @@ export async function updateSimulatedTransaction(input: {
         p_customer_notice: input.customerNotice.trim(),
       });
 
-  if (error) throw new Error(`Transaction update failed: ${error.message}`);
+  if (error) {
+    const message = error.message
+      .replace(/\bsimulated\b/gi, "")
+      .replace(/\s+/g, " ")
+      .trim();
+    throw new Error(`Transaction update failed: ${message}`);
+  }
   if (!data) throw new Error("The transaction update did not return a receipt.");
   const email = await notifyTransaction(data);
   revalidatePath("/", "layout");

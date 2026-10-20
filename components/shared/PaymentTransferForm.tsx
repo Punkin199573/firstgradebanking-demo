@@ -14,10 +14,11 @@ import {
   X,
 } from "lucide-react";
 import {
-  getSimulatedTransferStatus,
+  getTransferStatus,
   createTransferRequest,
 } from "@/lib/actions/transaction.action";
 import { formatAmount } from "@/lib/utils";
+import { isValidRoutingNumber } from "@/lib/routing-number";
 import { Button } from "../ui/button";
 
 const PaymentTransferForm = ({ accounts }: PaymentTransferFormProps) => {
@@ -32,6 +33,7 @@ const PaymentTransferForm = ({ accounts }: PaymentTransferFormProps) => {
   const [recipientName, setRecipientName] = useState("");
   const [recipientInstitution, setRecipientInstitution] = useState("");
   const [recipientAccountNumber, setRecipientAccountNumber] = useState("");
+  const [recipientRoutingNumber, setRecipientRoutingNumber] = useState("");
   const [amount, setAmount] = useState("");
   const [memo, setMemo] = useState("");
   const [transferType, setTransferType] = useState<
@@ -50,6 +52,7 @@ const PaymentTransferForm = ({ accounts }: PaymentTransferFormProps) => {
       name: string;
       institution: string;
       accountLast4: string;
+      routingLast4?: string;
     };
   } | null>(null);
   const [statusError, setStatusError] = useState("");
@@ -75,6 +78,13 @@ const PaymentTransferForm = ({ accounts }: PaymentTransferFormProps) => {
       setError("Add another account or choose an external institution.");
       return;
     }
+    if (
+      destination === "external" &&
+      !isValidRoutingNumber(recipientRoutingNumber)
+    ) {
+      setError("Enter a valid 9-digit routing number.");
+      return;
+    }
 
     setIsLoading(true);
     try {
@@ -84,6 +94,7 @@ const PaymentTransferForm = ({ accounts }: PaymentTransferFormProps) => {
               name: recipientName,
               institution: recipientInstitution,
               accountNumber: recipientAccountNumber,
+              routingNumber: recipientRoutingNumber,
             }
           : undefined;
       const result = await createTransferRequest({
@@ -99,6 +110,7 @@ const PaymentTransferForm = ({ accounts }: PaymentTransferFormProps) => {
       setRecipientName("");
       setRecipientInstitution("");
       setRecipientAccountNumber("");
+      setRecipientRoutingNumber("");
       lastObservedStatus.current = null;
       setReceipt({
         id: result.transferId,
@@ -128,7 +140,7 @@ const PaymentTransferForm = ({ accounts }: PaymentTransferFormProps) => {
     let active = true;
     const refreshStatus = async () => {
       try {
-        const result = await getSimulatedTransferStatus(receiptId);
+        const result = await getTransferStatus(receiptId);
         if (!active) return;
         const previousStatus = lastObservedStatus.current ?? {
           status: "pending",
@@ -401,6 +413,30 @@ const PaymentTransferForm = ({ accounts }: PaymentTransferFormProps) => {
               discarded after submission.
             </span>
           </label>
+          <label className="flex flex-col gap-2 text-14 font-medium text-gray-700 sm:col-span-2">
+            Recipient routing number
+            <input
+              className="input-class"
+              type="text"
+              inputMode="numeric"
+              autoComplete="off"
+              pattern="[0-9]{9}"
+              maxLength={9}
+              minLength={9}
+              value={recipientRoutingNumber}
+              onChange={(event) =>
+                setRecipientRoutingNumber(
+                  event.target.value.replace(/\D/g, "").slice(0, 9)
+                )
+              }
+              required
+              aria-describedby="recipient-routing-help"
+            />
+            <span id="recipient-routing-help" className="text-12 font-normal text-gray-500">
+              Enter the recipient institution’s 9-digit US routing number. Only
+              the last four digits are retained.
+            </span>
+          </label>
         </div>
       )}
 
@@ -660,7 +696,8 @@ const PaymentTransferForm = ({ accounts }: PaymentTransferFormProps) => {
                 </p>
                 <p className="mt-1 text-12 text-gray-600">
                   {receipt.recipient.institution} · Account ending in{" "}
-                  {receipt.recipient.accountLast4}
+                  {receipt.recipient.accountLast4} · Routing ending in{" "}
+                  {receipt.recipient.routingLast4 ?? "not recorded"}
                 </p>
               </div>
             )}
@@ -723,7 +760,7 @@ const PaymentTransferForm = ({ accounts }: PaymentTransferFormProps) => {
                   setCheckingStatus(true);
                   setStatusError("");
                   try {
-                    const result = await getSimulatedTransferStatus(receipt.id);
+                    const result = await getTransferStatus(receipt.id);
                     const previousStatus = lastObservedStatus.current ?? {
                       status: "pending",
                       notice: "",
