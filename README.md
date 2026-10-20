@@ -101,10 +101,10 @@ create paired ledger entries atomically in the database.
    load, the app displays a support availability message instead of silently
    ignoring chat requests.
 
-   `APP_ROUTING_NUMBER` is optional and server-only. When set to a valid
-   9-digit US routing number, it is shown as the app's routing number in account
-   details. It does not route or initiate payments; no real payment rail is
-   connected.
+   `APP_ROUTING_NUMBER` is optional and server-only. When set to exactly nine
+   digits, it is shown as the app's routing number in account details. A
+   placeholder value is not verified as an assigned bank routing number and
+   does not route or initiate payments; no real payment rail is connected.
 
    Verify the sender domain with Resend. Keep `RESEND_API_KEY` and
    `SUPABASE_SERVICE_ROLE_KEY` server-side only: never use a `NEXT_PUBLIC_`
