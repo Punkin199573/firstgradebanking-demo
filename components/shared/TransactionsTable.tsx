@@ -10,6 +10,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { transactionCategoryStyles } from "@/constants";
+import { requestSupportChat } from "@/lib/support-chat";
 import { MessageCircle } from "lucide-react";
 import {
   cn,
@@ -30,19 +31,6 @@ const CategoryBadge = ({ category }: CategoryBadgeProps) => {
       <p className={cn("text-[12px] font-medium", textColor)}>{category}</p>
     </div>
   );
-};
-
-const openSupportChat = () => {
-  const tawk = (window as Window & {
-    Tawk_API?: { maximize?: () => void; showWidget?: () => void };
-  }).Tawk_API;
-
-  if (tawk?.maximize) {
-    tawk.maximize();
-    return;
-  }
-
-  tawk?.showWidget?.();
 };
 
 const TransactionsTable = ({ transactions }: TransactionTableProps) => {
@@ -99,7 +87,7 @@ const TransactionsTable = ({ transactions }: TransactionTableProps) => {
                       {t.status !== "successful" && (
                         <button
                           type="button"
-                          onClick={openSupportChat}
+                          onClick={requestSupportChat}
                           className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-teal-200 bg-teal-50 px-3 py-2 text-12 font-semibold text-teal-800 transition-colors hover:bg-teal-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2"
                         >
                           <MessageCircle aria-hidden="true" className="size-4" />
